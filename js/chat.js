@@ -13,7 +13,17 @@ $('form').submit(function(){
   $('#m').val('');
   return false;
 });
+function invitePlayers(){
+  //select players
+  // console.log(confirm('machin' + 'invited you for a game. Do you want to join?'));
+  socket.emit('game_invitation', {players: []});
+}
 
+// <<<<<<<<<<<< Receive game invitation >>>>>>>>>>>>>>
+// socket.on('game_invitation', function(msg){//gameID, name, 
+//   $('#messages').append($('<li>').text(msg.name + ' invited you for game ' + msg.gameID));//TODO EVOL scroll down auto
+//   socket.emit('game_invitation_' + (confirm(msg.name + ' invited you for a game. Do you want to join?')?'accepted':'refused'),{gameID: msg.gameID, msg:''});
+// });
 // <<<<<<<<<<<< Receive chat message >>>>>>>>>>>>>>
 socket.on('chat_message', function(msg){
   $('#messages').append($('<li>').text(msg.name + ': ' +msg.message));//TODO EVOL scroll down auto

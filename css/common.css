@@ -37,26 +37,30 @@ form button {
       background: #eee;
 }
 .board {
-      position: absolute;
-      height:320px;
-      width:500px;
+      /*position: absolute;*/
+      height: 350px;
+      /*width:500px;*/
+      /*width:100%;*/
       background-color:green;
       right:0px;
+      border: thin solid;
 }
 .player {
-      position: relative;
+      /*position: relative;*/
+      text-align: center;
 }
 #topPlayer {
-      text-align:center;
+      /*text-align:center;*/
 }
 #leftPlayer {
-      left:0;
+      /*left:0;*/
 }
 #rightPlayer {
-      padding-left:404px;
+      /*right:0;*/
+      /*padding-left:404px;*/
 }
 #bottomPlayer {
-      text-align:center;
+      /*text-align:center;*/
 }
 .card {
       width:60px;
