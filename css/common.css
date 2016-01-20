@@ -36,7 +36,7 @@ form button {
 #messages li:nth-child(odd) {
       background: #eee;
 }
-.board {
+#board {
       /*position: absolute;*/
       height: 350px;
       /*width:500px;*/
@@ -65,4 +65,18 @@ form button {
 .card {
       width:60px;
       height:77px;
+}
+/*MESSAGE AREA*/
+#messageArea{
+      border: thin solid;
+      text-align: center;
+      height: 500px;
+}
+/*USER AREA*/
+#usersArea{
+      border: thin solid;
+      text-align: center;
+}
+#usersArea ul li{
+      list-style: none;
 }

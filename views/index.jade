@@ -4,48 +4,44 @@ block css
 block content
 	.container-fluid
 		.row
-			.col-sm-6
-				div.board
-					.row
-						.col-sm-5
-						.col-sm-2
-							div.player#topPlayer
-								img.card
-								span.playerName
-						.col-sm-5
-					.row
-						.col-sm-2
-							div.player#leftPlayer
-								img.card
-								span.playerName
-						.col-sm-8
-						.col-sm-2
-							div.player#rightPlayer
-								img.card
-								span.playerName
-					.row
-						.col-sm-5
-						.col-sm-2
-							div.player#bottomPlayer
-								img.card
-								span.playerName
-						.col-sm-5
-							//- div.boardOptions
-							//-   button(onclick="invitePlayers();") Invite players
-					.row
-						.col-sm-12
-							div#playerCards
-			.col-sm-4
-				span.well Messages
+			#board.col-sm-6
+				.row
+					.col-sm-5
+					.col-sm-2
+						div.player#topPlayer
+							img.card
+							span.playerName
+					.col-sm-5
+				.row
+					.col-sm-2
+						div.player#leftPlayer
+							img.card
+							span.playerName
+					.col-sm-8
+					.col-sm-2
+						div.player#rightPlayer
+							img.card
+							span.playerName
+				.row
+					.col-sm-5
+					.col-sm-2
+						div.player#bottomPlayer
+							img.card
+							span.playerName
+					.col-sm-5
+						//- div.boardOptions
+						//-   button(onclick="invitePlayers();") Invite players
+				.row
+					.col-sm-12
+						div#playerCards
+			.col-sm-4#messageArea
+				label.well Messages
 				ul#messages
-			.col-sm-2
-				span.well Connected Users
-				button Disconnect #{session.user.name}
+			.col-sm-2#usersArea
+				label.well Connected Users
+					a(href='/logout',style="display:block;") Disconnect #{session.user.name}
 				ul#userList
-					if users
-						each user in users
-							li user
-				button(onclick='invitePlayers',style="margin-top: 25px;") Invite
+				button(onclick='invitePlayers();') Invite
 		
 		form(action='')
 			input#m(autocomplete='off')

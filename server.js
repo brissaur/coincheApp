@@ -51,7 +51,7 @@ var Room = {
 	currentDealer : null,
 	firstTrickPlayer : null
 }
-var users = [];//iid = socketId
+var users = {}//iid = socketId
 // var User = {
 // 	id: '',//socket ID
 // 	name: ''
@@ -66,7 +66,7 @@ app.use(function(req,res,next){
     next();
 });
 app.get('/', auth.checkAuthorized, function(req, res){
-  res.render('index');
+	res.render('index');
 });
 app.get('/home', auth.checkAuthorized, function(req, res){
   res.redirect('/');
@@ -98,6 +98,18 @@ app.post('/register', function (req, res){
       auth.login(req, res);
     }
   });
+});
+app.get('/logout', function (req, res){
+  req.session.user = null;
+  req.session.redirectmessage = 'You were successfully disconnected';
+  res.redirect('/login');
+});
+app.get('/connectedUsers', function (req, res){
+	var usersToSend = [];
+	for (user in users){
+		usersToSend.push(users[user].name);//TODO: ne pas renvoyé le nom du client / lenlever a larrivee
+	}
+  res.send(usersToSend);
 });
 // ==============================================================
 // ================== SOCKETS ===================================
@@ -146,7 +158,7 @@ io.on('connection', function(socket){
 	socket.on('disconnect', function(){
 		if (users[socket.id]){
 			var name=users[socket.id].name;
-			users[socket.id]=null;
+			delete users[socket.id];
 		}else{
 			var name='visitor';
 		}
@@ -159,25 +171,56 @@ io.on('connection', function(socket){
 	    io.emit('chat_message', {name: users[socket.id].name, message: msg.message});//TODO EVOL roadcast+print local
   	});
 	// <<<<<<<<<<<< Manage game invitation >>>>>>>>>>>>>>
-	// socket.on('game_invitation', function(msg){
-	// 	//créer un namespace ET SEN RAPELLER
-	//     console.log('Game invitation from '+ users[socket.id].name + ' for '+ msg.players);
-	//     var gameId = Math.floor((Math.random() * 1000));
-	//     io.emit('game_invitation', {name: users[socket.id].name, message: '', gameID: gameID});//TODO EVOL roadcast+print local
-	//     var gamePlayers = msg.players;
-	//     gamePlayers.push(users[socket.id].name);
-	//     rooms[gameID] = {players: gamePlayers, currentPlayer:null, currentDealer:null, firstTrickPlayer:null}//comment on check ils acceptent
- //  	});
-	// socket.on('game_invitation_accepted', function(msg){
-	//     console.log('Game invitation accepted by '+ users[socket.id].name);
-	//     // io.emit('game_invitation', {name: users[socket.id].name, message: '', gameID: Math.floor((Math.random() * 1000))});//TODO EVOL roadcast+print local
- //  	});
-	// socket.on('game_invitation_refused', function(msg){
-	//     console.log('Game invitation refused by '+ users[socket.id].name);
+	socket.on('game_invitation', function(msg){
+		//créer un namespace ET SEN RAPELLER
+	    console.log('Game invitation from '+ users[socket.id].name + ' for '+ msg.players);
+	    var gameID = Math.floor((Math.random() * 1000));
+	    socket.broadcast.emit('game_invitation', {name: users[socket.id].name, message: '', gameID: gameID});//TODO EVOL roadcast+print local
+	    //TODO: set Timeout si client rep pas
+	    // var gamePlayers = msg.players;
+	    var gamePlayers = {};
+	    gamePlayers['a']=false;
+	    gamePlayers['b']=false;
+	    // {name:'b', accepted:false}, {name:'a', accepted:false}];
 	    
-	//     rooms[gameID] = {players: gamePlayers, currentPlayer:null, currentDealer:null, firstTrickPlayer:null}//comment on check ils acceptent
-	//     // io.emit('game_invitation', {name: users[socket.id].name, message: '', gameID: Math.floor((Math.random() * 1000))});//TODO EVOL roadcast+print local
- //  	});
+	    // gamePlayers.push(users[socket.id].name);
+	    rooms[gameID] = {players: gamePlayers, currentPlayer:null, currentDealer:null, firstTrickPlayer:null}//comment on check ils acceptent
+  	});
+	socket.on('game_invitation_accepted', function(msg){//msg-> gameID
+	    if (rooms[msg.gameID]){
+		    console.log('Game invitation accepted by '+ users[socket.id].name);
+		    var thisRoom = rooms[msg.gameID];
+		    var players = thisRoom.players;
+		    players[users[socket.id].name] = true;
+		    var gameMustStart=true;
+		    for (player in players){
+		    	gameMustStart==gameMustStart && players[player];
+		    }
+		    if (gameMustStart){
+				console.log('initialize_game');
+		    	rand=Math.floor((Math.random() * MAXPLAYER));
+				thisRoom.currentDealer=rand;
+				thisRoom.firstTrickPlayer=(rand+1)%MAXPLAYER;
+				thisRoom.currentPlayer=(rand+1)%MAXPLAYER;
+				var playersToSend = [];
+				for (player in players){
+					playersToSend.push(player);
+				}
+				io.emit('initialize_game', {players: playersToSend, dealer: Room.currentDealer});
+				io.to(thisRoom.players[Room.currentPlayer]).emit('play', {});
+		    }
+
+		} else {
+			console.log('game ' + msg.gameID + ' already cancelled');
+		}
+	    // io.emit('game_invitation', {name: users[socket.id].name, message: '', gameID: Math.floor((Math.random() * 1000))});//TODO EVOL roadcast+print local
+  	});
+	socket.on('game_invitation_refused', function(msg){
+	    console.log('Game invitation refused by '+ users[socket.id].name);
+	    io.emit('game_invitation_cancelled', {message:'', gameID: msg.gameID});
+	    delete rooms[msg.gameID];
+	    // io.emit('game_invitation', {name: users[socket.id].name, message: '', gameID: Math.floor((Math.random() * 1000))});//TODO EVOL roadcast+print local
+  	});
 	// <<<<<<<<<<<< Manage a player plays >>>>>>>>>>>>>>
   	socket.on('play', function(msg){//.card + .player + .firstPlayer
   		assert(Room.players.indexOf(socket.id)===Room.currentPlayer, 'Its not that player s turn...' + Room.players.indexOf(socket.id)+'==!'+Room.currentPlayer);

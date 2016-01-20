@@ -7,6 +7,12 @@ var dealer;
 var places = {};
 var pseudo = '';
 
+$.get('/connectedUsers',function(data){
+    data.forEach(function(user){
+      $('#userList').append($('<li>').text(user));
+    })
+});
+
 // <<<<<<<<<<<< Send chat message >>>>>>>>>>>>>>
 $('form').submit(function(){
   socket.emit('chat_message', {message: $('#m').val()});
@@ -20,10 +26,10 @@ function invitePlayers(){
 }
 
 // <<<<<<<<<<<< Receive game invitation >>>>>>>>>>>>>>
-// socket.on('game_invitation', function(msg){//gameID, name, 
-//   $('#messages').append($('<li>').text(msg.name + ' invited you for game ' + msg.gameID));//TODO EVOL scroll down auto
-//   socket.emit('game_invitation_' + (confirm(msg.name + ' invited you for a game. Do you want to join?')?'accepted':'refused'),{gameID: msg.gameID, msg:''});
-// });
+socket.on('game_invitation', function(msg){//gameID, name, 
+  $('#messages').append($('<li>').text(msg.name + ' invited you for game ' + msg.gameID));//TODO EVOL scroll down auto
+  socket.emit('game_invitation_' + (confirm(msg.name + ' invited you for a game. Do you want to join?')?'accepted':'refused'),{gameID: msg.gameID, msg:''});
+});
 // <<<<<<<<<<<< Receive chat message >>>>>>>>>>>>>>
 socket.on('chat_message', function(msg){
   $('#messages').append($('<li>').text(msg.name + ': ' +msg.message));//TODO EVOL scroll down auto
@@ -37,10 +43,19 @@ socket.on('chat_message', function(msg){
 // <<<<<<<<<<<< Manage new connection >>>>>>>>>>>>>>
 socket.on('connection', function(msg){
   $('#messages').append($('<li>').text(msg.name + ' is connected.'));
+  $('#userList').append($('<li>').text(msg.name));
+  //TODO sort
 });
 // <<<<<<<<<<<< Manage new disconnection >>>>>>>>>>>>>>
 socket.on('disconnection', function(msg){
   $('#messages').append($('<li>').text(msg.name + ' disconnected.'));
+  $('#userList').childNodes.forEach(function(li){
+    console.log(li.text);
+    if(li.text==msg.name){
+      // remove
+      li.parentNode.removeChild(li);
+    }
+  })
 });
 
 // <<<<<<<<<<<< Manage my turn to play >>>>>>>>>>>>>>
@@ -54,8 +69,8 @@ socket.on('initialize_game', function(msg){
   // var dealer = msg.dealer;//TODO button
   var myIndex = msg.players.indexOf(pseudo);
   var positions = ['bottomPlayer', 'leftPlayer', 'topPlayer', 'rightPlayer'];
-  for (var i = 0; i <4; i++) {
-    playername = msg.players[(i+myIndex)%4];
+  for (var i = 0; i <msg.players.length; i++) {
+    playername = msg.players[(i+myIndex)%msg.players.length];
     places[playername]=positions[i];
     console.log('places['+playername+']='+places[playername]);
     document.getElementById(positions[i]).childNodes[1].innerHTML=playername;
