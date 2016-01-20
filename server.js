@@ -1,17 +1,41 @@
 // ==============================================================
 // ================== REQUIRES ==================================
 // ==============================================================
-
 var express = require('express');
 	var app = express();
 		app.use(express.static(__dirname));//define static default path
 var http = require('http').Server(app);
 var jade = require('jade');
   app.set('view engine', 'jade');
-var io = require('socket.io')(http);
 
 var assert = require('assert');
 var ent = require('ent'); // Permet de bloquer les caractères HTML (sécurité équivalente à htmlentities en PHP)
+
+var session = require("express-session")({
+    secret: "my-secret",
+    resave: true,
+    saveUninitialized: true
+  });
+// var session = require ('express-session');
+// 	app.use(session({secret: "This is a secret",resave: true,saveUninitialized: true}));
+var io = require('socket.io')(http);
+var sharedsession = require("express-socket.io-session");
+	app.use(session); 
+	io.use(sharedsession(session, {
+	    autoSave:true
+	}));
+
+var auth = require('D:/projects/coincheApp/modules/authentication');
+var user = require('D:/projects/coincheApp/modules/user');
+
+var MongoClient = require('mongodb').MongoClient;
+var url = 'mongodb://localhost:27017/test';
+
+var bodyParser = require('body-parser'); // Charge le middleware de gestion des paramètres
+  app.use( bodyParser.json() );       // to support JSON-encoded bodies
+  app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+    extended: true
+  })); 
 // ==========================================
 // ==============================================================
 // ================== GLOBAL VARS ===============================
@@ -35,19 +59,65 @@ var users = [];//iid = socketId
 // ==============================================================
 // ================== ROUTES ====================================
 // ==============================================================
-app.get('/', function(req, res){
+app.use(function(req,res,next){
+    console.log('============',req.method, ' ', req.originalUrl,'============');
+    res.locals.session = req.session;
+    // console.dir(req.session);
+    next();
+});
+app.get('/', auth.checkAuthorized, function(req, res){
   res.render('index');
 });
-
-
+app.get('/home', auth.checkAuthorized, function(req, res){
+  res.redirect('/');
+});
+app.get('/login', function (req, res) {
+  res.render('login');
+});
+app.post('/login', function (req, res){
+  console.log('Attempt login...');
+  auth.login(req, res);
+});
+app.get('/register', function (req, res){
+  res.render('register');
+});
+app.post('/register', function (req, res){
+  console.log('Attempt register...');
+  user.create(req, res, function (err, msg, result){
+    if (err){
+      console.log('Register error='+ err.message);//todo- vrai error =
+      req.session.redirectmessage='ERROR: '+ err.message;
+      res.redirect('/register');
+    } else if (msg){
+      console.log('Register failed: '+ msg);//todo- vrai error =
+      req.session.redirectmessage='Signup failed: '+ msg;
+      res.redirect('/register');
+    } else {
+      console.log('Register: success');
+      console.log('Attempt login...');
+      auth.login(req, res);
+    }
+  });
+});
 // ==============================================================
 // ================== SOCKETS ===================================
 // ==============================================================
 io.on('connection', function(socket){
+	if (socket.handshake.session.user){
+		var name=socket.handshake.session.user.name;
+		console.log(name + ' connected with socket ' + socket.id);
+		users[socket.id] = {id: socket.id, name: name};
+		Room.players.push(socket.id);
+		socket.emit('connection_accepted', {message:'Connection accepted'});//when connection refused? how?
+		socket.broadcast.emit('connection', {name: name});
+	} else {
+
+	}
 	// <<<<<<<<<<<< Ask for pseudo >>>>>>>>>>>>>>
-	socket.emit('identification_required',{});
+	// socket.emit('identification_required',{});//TODO EVOL : si server reboot, on perd infos de session (client doit le srenvoyer)
 	// <<<<<<<<<<<< Manage new connection >>>>>>>>>>>>>>
 	socket.on('connection', function(data) { //data = {name}
+		// console.log(socket.handshake.session);
 		name = ent.encode(data.name);
    		console.log(name + ' connected with socket ' + socket.id);
 
@@ -75,10 +145,10 @@ io.on('connection', function(socket){
 	// <<<<<<<<<<<< Manage disconnection >>>>>>>>>>>>>>
 	socket.on('disconnect', function(){
 		if (users[socket.id]){
-			name=users[socket.id].name;
+			var name=users[socket.id].name;
 			users[socket.id]=null;
 		}else{
-			name='visitor';
+			var name='visitor';
 		}
    		console.log(name + ' disconnected.');
 		socket.broadcast.emit('disconnection', {name:name});

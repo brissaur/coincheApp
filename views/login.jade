@@ -1,0 +1,21 @@
+extends template
+block css
+block content
+	.container
+		section
+			if session.redirectmessage
+				.alert.alert-warning
+					strong Aborting! 
+					|  #{session.redirectmessage}
+				-session.redirectmessage=''
+			h1 Sign in
+			form(role='form', action='/login', method='post')
+				.form-group
+					label(for='email') Email address:
+					input#email.form-control(type='email',name='email', autofocus)
+				.form-group
+					label(for='pwd') Password:
+					input#pwd.form-control(type='password',name='pwd')
+				button.btn.btn-default(type='submit') Submit
+			a(href="/register") Not registered yet?
+block scripts

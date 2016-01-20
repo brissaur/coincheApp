@@ -29,11 +29,11 @@ socket.on('chat_message', function(msg){
   $('#messages').append($('<li>').text(msg.name + ': ' +msg.message));//TODO EVOL scroll down auto
 });
 // <<<<<<<<<<<< Manage authentification >>>>>>>>>>>>>>
-socket.on('identification_required', function(msg){
-  console.log(pseudo);
-  while(pseudo=='' ||pseudo==null){pseudo = prompt('What is your pseudo?');}//KO
-  socket.emit('connection', {name: pseudo}); 
-});
+// socket.on('identification_required', function(msg){
+//   // console.log(pseudo);
+//   // while(pseudo=='' ||pseudo==null){pseudo = prompt('What is your pseudo?');}//KO
+//   socket.emit('connection', {name: pseudo}); 
+// });
 // <<<<<<<<<<<< Manage new connection >>>>>>>>>>>>>>
 socket.on('connection', function(msg){
   $('#messages').append($('<li>').text(msg.name + ' is connected.'));
