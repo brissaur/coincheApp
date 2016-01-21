@@ -1,7 +1,7 @@
 var user = require ('./user');
 exports.login = login;
 
-function login(req, res){
+function login(req, res, next){
 	if(req.session.user) {
 		console.log('User already logged in');
 		return;

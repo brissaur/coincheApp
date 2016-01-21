@@ -40,7 +40,7 @@ var bodyParser = require('body-parser'); // Charge le middleware de gestion des 
 // ==============================================================
 // ================== GLOBAL VARS ===============================
 // ==============================================================
-var MAXPLAYER=4;
+var MAXPLAYER=2;
 var TIMEUNIT = 1000;
 var PORT = 3000;
 var rooms = {};
@@ -76,7 +76,10 @@ app.get('/login', function (req, res) {
 });
 app.post('/login', function (req, res){
   console.log('Attempt login...');
-  auth.login(req, res);
+  auth.login(req, res, function onError(err){
+  	req.session.redirectmessage='ERROR: '+ err.message;
+  	res.redirect('/login');
+  });
 });
 app.get('/register', function (req, res){
   res.render('register');
@@ -109,7 +112,8 @@ app.get('/connectedUsers', function (req, res){
 	for (user in users){
 		usersToSend.push(users[user].name);//TODO: ne pas renvoyé le nom du client / lenlever a larrivee
 	}
-  res.send(usersToSend);
+    console.dir(users);
+  	res.send(usersToSend);
 });
 // ==============================================================
 // ================== SOCKETS ===================================
@@ -120,40 +124,16 @@ io.on('connection', function(socket){
 		console.log(name + ' connected with socket ' + socket.id);
 		users[socket.id] = {id: socket.id, name: name};
 		Room.players.push(socket.id);
-		socket.emit('connection_accepted', {message:'Connection accepted'});//when connection refused? how?
+		// console.log(' OK : socket.handshake.session.user');
+		socket.emit('connection_accepted', {message:'Connection accepted', name: name});//when connection refused? how?
 		socket.broadcast.emit('connection', {name: name});
 	} else {
-
+		socket.emit('connection_refused', {message:'Connection refused. Please refresh your browser (F5).'});//when connection refused? how?
+		socket.disconnect();
+		// console.log(' WARNING : NO socket.handshake.session.user');//TODO: gros probleme lors de la reconnection du server:/ = refuser le socket et demander le refresh
 	}
 	// <<<<<<<<<<<< Ask for pseudo >>>>>>>>>>>>>>
 	// socket.emit('identification_required',{});//TODO EVOL : si server reboot, on perd infos de session (client doit le srenvoyer)
-	// <<<<<<<<<<<< Manage new connection >>>>>>>>>>>>>>
-	socket.on('connection', function(data) { //data = {name}
-		// console.log(socket.handshake.session);
-		name = ent.encode(data.name);
-   		console.log(name + ' connected with socket ' + socket.id);
-
-		users[socket.id] = {id: socket.id, name: name};
-		Room.players.push(socket.id);
-
-		socket.emit('connection_accepted', {message:'Connection accepted'});//when connection refused? how?
-		socket.broadcast.emit('connection', {name: name});
-		// if(Room.players.length==MAXPLAYER){//start game
-
-		// 	rand=Math.floor((Math.random() * MAXPLAYER));
-		// 	Room.currentDealer=rand;
-		// 	Room.firstTrickPlayer=(rand+1)%MAXPLAYER;
-		// 	Room.currentPlayer=(rand+1)%MAXPLAYER;
-		// 	console.log('initialize_game');
-		// 	var playersToSend = [];
-		// 	for (var i = 0; i < Room.players.length; i++) {
-		// 		assert(Room.players[i] != null, 'Room.players[i] is null');
-		// 		playersToSend.push(users[Room.players[i]].name);
-		// 	};
-		// 	io.emit('initialize_game', {players: playersToSend, dealer: Room.currentDealer});
-		// 	io.to(Room.players[Room.currentPlayer]).emit('play', {});
-		// }
-    });
 	// <<<<<<<<<<<< Manage disconnection >>>>>>>>>>>>>>
 	socket.on('disconnect', function(){
 		if (users[socket.id]){
@@ -161,6 +141,8 @@ io.on('connection', function(socket){
 			delete users[socket.id];
 		}else{
 			var name='visitor';
+    		// console.dir(users);
+    		// console.dir('this socket id = ' +socket.id);//TODO: probleme doublons qd refresh rapide
 		}
    		console.log(name + ' disconnected.');
 		socket.broadcast.emit('disconnection', {name:name});
@@ -178,36 +160,47 @@ io.on('connection', function(socket){
 	    socket.broadcast.emit('game_invitation', {name: users[socket.id].name, message: '', gameID: gameID});//TODO EVOL roadcast+print local
 	    //TODO: set Timeout si client rep pas
 	    // var gamePlayers = msg.players;
-	    var gamePlayers = {};
-	    gamePlayers['a']=false;
-	    gamePlayers['b']=false;
+	    var playersIndex = {};
+	    playersIndex['a']=0;//TODO: PRIORITAIRE:
+	    playersIndex['b']=1;
+	    var gamePlayers = [];
+	    gamePlayers.push(socket);
+	    gamePlayers[users[socket.id].name]=socket.id;
+
 	    // {name:'b', accepted:false}, {name:'a', accepted:false}];
 	    
 	    // gamePlayers.push(users[socket.id].name);
-	    rooms[gameID] = {players: gamePlayers, currentPlayer:null, currentDealer:null, firstTrickPlayer:null}//comment on check ils acceptent
+	    rooms[gameID] = {players: gamePlayers, playersIndex: playersIndex, currentPlayer:null, currentDealer:null, firstTrickPlayer:null}//comment on check ils acceptent
   	});
 	socket.on('game_invitation_accepted', function(msg){//msg-> gameID
 	    if (rooms[msg.gameID]){
 		    console.log('Game invitation accepted by '+ users[socket.id].name);
 		    var thisRoom = rooms[msg.gameID];
 		    var players = thisRoom.players;
-		    players[users[socket.id].name] = true;
+		    players[users[socket.id].name] = socket.id;
 		    var gameMustStart=true;
+
 		    for (player in players){
-		    	gameMustStart==gameMustStart && players[player];
+		    	// console.log(players);
+		    	gameMustStart=gameMustStart && players[player];
 		    }
 		    if (gameMustStart){
 				console.log('initialize_game');
-		    	rand=Math.floor((Math.random() * MAXPLAYER));
-				thisRoom.currentDealer=rand;
-				thisRoom.firstTrickPlayer=(rand+1)%MAXPLAYER;
-				thisRoom.currentPlayer=(rand+1)%MAXPLAYER;
 				var playersToSend = [];
 				for (player in players){
 					playersToSend.push(player);
 				}
-				io.emit('initialize_game', {players: playersToSend, dealer: Room.currentDealer});
-				io.to(thisRoom.players[Room.currentPlayer]).emit('play', {});
+		    	nbPlayers = playersToSend.length;
+		    	rand=Math.floor((Math.random() * nbPlayers));
+				thisRoom.currentDealer=rand;
+				thisRoom.firstTrickPlayer=(rand+1)%nbPlayers;
+				thisRoom.currentPlayer=(rand+1)%nbPlayers;
+
+				io.emit('initialize_game', {players: playersToSend, dealer: thisRoom.currentDealer});
+
+				io.to(thisRoom.players[playersToSend[thisRoom.currentPlayer]]).emit('play', {gameID:msg.gameID});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
+				console.log(thisRoom.currentPlayer);
+				console.log(thisRoom.players[thisRoom.currentPlayer]);
 		    }
 
 		} else {
@@ -217,25 +210,29 @@ io.on('connection', function(socket){
   	});
 	socket.on('game_invitation_refused', function(msg){
 	    console.log('Game invitation refused by '+ users[socket.id].name);
-	    io.emit('game_invitation_cancelled', {message:'', gameID: msg.gameID});
+	    io.emit('game_invitation_cancelled', {message:'', gameID: msg.gameID, name:users[socket.id].name});
 	    delete rooms[msg.gameID];
 	    // io.emit('game_invitation', {name: users[socket.id].name, message: '', gameID: Math.floor((Math.random() * 1000))});//TODO EVOL roadcast+print local
   	});
 	// <<<<<<<<<<<< Manage a player plays >>>>>>>>>>>>>>
   	socket.on('play', function(msg){//.card + .player + .firstPlayer
-  		assert(Room.players.indexOf(socket.id)===Room.currentPlayer, 'Its not that player s turn...' + Room.players.indexOf(socket.id)+'==!'+Room.currentPlayer);
+  		var thisRoom = rooms[msg.gameID];
+
+  		assert(thisRoom!=null);
+  		assert(thisRoom!=='undefined');
+  		assert(thisRoom.players.indexOf(socket.id)===thisRoom.currentPlayer, 'Its not that player s turn...' + thisRoom.players.indexOf(socket.id)+'==!'+thisRoom.currentPlayer);
 		io.emit('played', {name: users[socket.id].name, card:msg.card});
-		if (Room.firstTrickPlayer==((Room.currentPlayer+1)%MAXPLAYER)){
+		if (thisRoom.firstTrickPlayer==((thisRoom.currentPlayer+1)%MAXPLAYER)){
 			setTimeout(function(){
 				console.log('endTrick');
 				io.emit('end_trick', {message:'trick well ended'});
-				Room.currentPlayer = Math.floor((Math.random() * MAXPLAYER));//TODO EVOL: calculé quia  gagné le pli
-				Room.firstTrickPlayer = Room.currentPlayer;
-				io.to(Room.players[Room.currentPlayer]).emit('play', {});	
+				thisRoom.currentPlayer = Math.floor((Math.random() * MAXPLAYER));//TODO EVOL: calculé quia  gagné le pli
+				thisRoom.firstTrickPlayer = thisRoom.currentPlayer;
+				io.to(thisRoom.players[thisRoom.currentPlayer]).emit('play', {gameID:msg.gameID});	
 			},2*TIMEUNIT);
 		} else {
-			Room.currentPlayer=(Room.currentPlayer+1)%MAXPLAYER;
-			io.to(Room.players[Room.currentPlayer]).emit('play', {});	
+			thisRoom.currentPlayer=(thisRoom.currentPlayer+1)%MAXPLAYER;
+			io.to(thisRoom.players[thisRoom.currentPlayer]).emit('play', {gameID:msg.gameID});	
 		}
   	});
 });

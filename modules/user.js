@@ -34,7 +34,7 @@ function create(req, res, callback){//securité transfert mdp
 	  }
   	MongoClient.connect(url, function(err, db){
 		if (err) return callback(err);
-  		db.collection(USER_COLLECTION).find({email: email}).toArray(function(err, res){
+  		db.collection(USER_COLLECTION).find({email: email}).toArray(function(err, res){//TODO: probleme user unique plus simple.
   			if (err) return callback(err);
   			if (res.length >0){
   				var msg = 'Email already exists';
