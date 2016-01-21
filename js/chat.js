@@ -75,7 +75,8 @@ socket.on('disconnection', function(msg){
 
 // <<<<<<<<<<<< Manage my turn to play >>>>>>>>>>>>>>
 socket.on('play', function(msg){
-    var card = prompt('What do you want to play?');
+    var card = prompt('What do you want to play in ' + cards);
+    // console.assert()
     socket.emit('play', {card: card, gameID:msg.gameID});
 });
 // <<<<<<<<<<<< Manage game initialization >>>>>>>>>>>>>>

@@ -18,6 +18,7 @@ function Deck(){
 	};
 	this.distribute=function(){
 		return [this.cards.slice(0,8),this.cards.slice(8,16),this.cards.slice(16,24),this.cards.slice(24,32)];
+		//use splice()
 	};
 }
 // exports.test = 'hello';
