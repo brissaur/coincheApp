@@ -25,8 +25,8 @@ var sharedsession = require("express-socket.io-session");
 	    autoSave:true
 	}));
 
-var auth = require('D:/projects/coincheApp/modules/authentication');
-var user = require('D:/projects/coincheApp/modules/user');
+var auth = require(__dirname+'/modules/authentication');
+var user = require(__dirname +'/modules/user');
 
 var MongoClient = require('mongodb').MongoClient;
 var url = 'mongodb://localhost:27017/test';
@@ -36,6 +36,8 @@ var bodyParser = require('body-parser'); // Charge le middleware de gestion des 
   app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
     extended: true
   })); 
+
+var Deck = require(__dirname+'/modules/deck');
 // ==========================================
 // ==============================================================
 // ================== GLOBAL VARS ===============================
@@ -169,7 +171,7 @@ io.on('connection', function(socket){
 		});
 		//sender auto accepts
 		users[name].game.accepted=true;
-	    rooms[gameID] = {players: gamePlayers,  currentPlayer:null, currentDealer:null, firstTrickPlayer:null}//comment on check ils acceptent
+	    rooms[gameID] = {players: gamePlayers,  currentPlayer:null, currentDealer:null, firstTrickPlayer:null, deck:null}//comment on check ils acceptent
 	    socket.broadcast.emit('game_invitation', {name: name, message: '', gameID: gameID});//TODO EVOL roadcast+print local
   	});
 	socket.on('game_invitation_accepted', function(msg){//msg-> gameID
@@ -187,30 +189,28 @@ io.on('connection', function(socket){
 				console.log(pName+'-->'+users[pName].game.accepted);
 				gameMustStart = gameMustStart && users[pName].game.accepted;
 			});
-		    // var players = thisRoom.players;
-		    // players[users[socket.id].name] = socket.id;
 
-		    // for (player in players){
-		    // 	// console.log(players);
-		    // 	gameMustStart=gameMustStart && players[player];
-		    // }
 		    if (gameMustStart){
 				console.log('initialize_game');
-				// var playersToSend = [];
-				// for (player in players){
-				// 	playersToSend.push(player);
-				// }
+
 		    	nbPlayers = thisRoom.players.length;
 		    	assert(nbPlayers==MAXPLAYER);
 		    	rand=Math.floor((Math.random() * MAXPLAYER));
 				thisRoom.currentDealer=rand;
 				thisRoom.firstTrickPlayer=(rand+1)%MAXPLAYER;
 				thisRoom.currentPlayer=(rand+1)%MAXPLAYER;
+				thisRoom.deck=Deck.newDeck();
+				thisRoom.deck.shuffle();
+				thisRoom.deck.shuffle();
+				cards=thisRoom.deck.distribute();
 
-				io.emit('initialize_game', {players: thisRoom.players, dealer: thisRoom.currentDealer});
+				for (pIndex in thisRoom.players){
+					users[thisRoom.players[pIndex]].game.cards=cards[pIndex];
+					io.to(users[thisRoom.players[pIndex]].socket).emit('initialize_game', {msg:'', players: thisRoom.players, dealer: thisRoom.currentDealer, cards: cards[pIndex]});
+				}
 
 				io.to(users[thisRoom.players[thisRoom.currentPlayer]].socket).emit('play', {gameID:msg.gameID});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
-				console.log(users[thisRoom.players[thisRoom.currentPlayer]].socket);
+				// console.log(users[thisRoom.players[thisRoom.currentPlayer]].socket);
 				// console.log(thisRoom.players[thisRoom.currentPlayer]);
 		    }
 

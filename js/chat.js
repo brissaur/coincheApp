@@ -4,7 +4,9 @@
 var socket = io();
 var dealer;
 // var players = [];
+var positions = ['bottomPlayer', 'leftPlayer', 'topPlayer', 'rightPlayer'];
 var places = {};
+var cards = [];
 var pseudo = '';
 
 $.get('/connectedUsers',function(data){
@@ -77,12 +79,12 @@ socket.on('play', function(msg){
     socket.emit('play', {card: card, gameID:msg.gameID});
 });
 // <<<<<<<<<<<< Manage game initialization >>>>>>>>>>>>>>
-socket.on('initialize_game', function(msg){
-  $('#messages').append($('<li>').text('Starting Game...'));
+socket.on('initialize_game', function(msg){//cards, players, dealer
   // var dealer = msg.dealer;//TODO button
   // debugger;
   var myIndex = msg.players.indexOf(pseudo);
-  var positions = ['bottomPlayer', 'leftPlayer', 'topPlayer', 'rightPlayer'];
+  cards = msg.cards;
+  $('#messages').append($('<li>').text('Starting Game...' + cards));
   for (var i = 0; i <msg.players.length; i++) {
     playername = msg.players[(i+myIndex)%msg.players.length];
     places[playername]=positions[i];
