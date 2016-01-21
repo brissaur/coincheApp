@@ -6,15 +6,15 @@ function login(req, res, next){
 		console.log('User already logged in');
 		return;
 	}
-  	var email = req.body.email;
+  	var username = req.body.username;
 	var password = req.body.pwd;
-	console.log('email= '+ email+ '+password=' + password );
+	console.log('username= '+ username+ '+password=' + password );
 
 	//auth
-	user.authenticate(email, password, function(err, msg, user){
+	user.authenticate(username, password, function(err, msg, resultedUser){
 		if (err) return next(err);
-	    if (user) {
-			req.session.user = {id: user.id, email: user.email, name: user.name};
+	    if (resultedUser) {
+			req.session.user = {id: resultedUser.id, email: resultedUser.email, name: resultedUser.name};
 			console.log('Login success');
 			req.session.redirectmessage = 'You were successfuly logged in.';
 			res.redirect('/home');

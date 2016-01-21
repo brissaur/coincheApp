@@ -34,10 +34,10 @@ function create(req, res, callback){//securité transfert mdp
 	  }
   	MongoClient.connect(url, function(err, db){
 		if (err) return callback(err);
-  		db.collection(USER_COLLECTION).find({email: email}).toArray(function(err, res){//TODO: probleme user unique plus simple.
+  		db.collection(USER_COLLECTION).find({name: name}).toArray(function(err, res){//TODO: probleme user unique plus simple.
   			if (err) return callback(err);
   			if (res.length >0){
-  				var msg = 'Email already exists';
+  				var msg = 'Username already exists';
   				return callback(null, msg);
   			}
 			db.collection(USER_COLLECTION).insert(user,function(err, res){
@@ -56,12 +56,12 @@ function create(req, res, callback){//securité transfert mdp
 // 	});
 // }
 exports.authenticate=authenticate;
-function authenticate(email, password, callback) {
+function authenticate(username, password, callback) {
 	MongoClient.connect(url, function(err, db){
 		if (err) return callback(err);
-  		db.collection(USER_COLLECTION).findOne({email:email}, function(err, doc) {
+  		db.collection(USER_COLLECTION).findOne({name:username}, function(err, doc) {
     		if (err) return callback(err);
-    		if (!doc) return callback(null, 'Email undefined', null);
+    		if (!doc) return callback(null, 'Username undefined', null);
 		    if (doc.password === hash(password)) {
 		      callback(null, null, doc);
 		    } else {

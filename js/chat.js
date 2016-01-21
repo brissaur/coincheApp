@@ -22,7 +22,7 @@ $('form').submit(function(){
 function invitePlayers(){
   //select players
   // console.log(confirm('machin' + 'invited you for a game. Do you want to join?'));
-  socket.emit('game_invitation', {players: []});
+  socket.emit('game_invitation', {players: ['a','b']});
 }
 
 // <<<<<<<<<<<< Receive game invitation >>>>>>>>>>>>>>
