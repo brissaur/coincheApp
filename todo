@@ -1,6 +1,6 @@
-GAME INIT EST LANCE MAIS PERSON NE JOUE
-
-
+pb des cartes deja joué
+	condition pur rajouter le listener ? curren t= src!='' mais non accessible en jquery
+	chat.js:112
 
 
 peggie
@@ -29,3 +29,7 @@ _____________________________________________________
 
 
 systeme d'invit avec selection
+
+/////////////////////////////////////////////////////////////
+display du jeu joueur & selection des cartes
+fin des 8 jetees et nouvelle jetee

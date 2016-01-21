@@ -66,6 +66,12 @@ form button {
       width:60px;
       height:77px;
 }
+.cardToBePlayed{
+      position: relative;
+}
+#playerCards{
+      text-align: center;
+}
 /*MESSAGE AREA*/
 #messageArea{
       border: thin solid;
@@ -79,4 +85,7 @@ form button {
 }
 #usersArea ul li{
       list-style: none;
+}
+.hidden{
+      display: none;
 }

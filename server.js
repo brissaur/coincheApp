@@ -1,4 +1,3 @@
-var ar= [];
 // ==============================================================
 // ================== REQUIRES ==================================
 // ==============================================================
@@ -132,10 +131,13 @@ io.on('connection', function(socket){
 		users[name] = {socket: socket.id, name: name, game:null};
 		socket.emit('connection_accepted', {message:'Connection accepted', name: name});//when connection refused? how?
 		socket.broadcast.emit('connection', {name: name});
+	//TEST
+		// socket.emit('initialize_game', {msg:'', players: ['a','b'], dealer: 'a', cards: ['7H','8H','9H','10H','JH','QH','KH','AH']});
 	} else {
 		socket.emit('connection_refused', {message:'Connection refused. Please refresh your browser (F5).'});//when connection refused? how?
 		socket.disconnect();
 	}
+
 	// <<<<<<<<<<<< Ask for pseudo >>>>>>>>>>>>>>
 	// socket.emit('identification_required',{});//TODO EVOL : si server reboot, on perd infos de session (client doit le srenvoyer)
 	// <<<<<<<<<<<< Manage disconnection >>>>>>>>>>>>>>
@@ -246,7 +248,7 @@ io.on('connection', function(socket){
   		assert(users[name].game.gameID==msg.gameID);
   		assert(thisRoom.players.indexOf(name)===thisRoom.currentPlayer);
 
-  		assert(AUTHORIZEDCARDS.indexOf(msg.card)!=-1);
+  		assert(AUTHORIZEDCARDS.indexOf(msg.card)!=-1, 'AUTHORIZEDCARDS.indexOf(msg.card): ' + AUTHORIZEDCARDS.indexOf(msg.card) +' ' + msg.card);
   		//remove played card from hand
   		var cardIndex = users[name].game.cards.indexOf(msg.card);
   	// 	console.log(msg.cards);

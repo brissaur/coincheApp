@@ -9,6 +9,35 @@ var places = {};
 var cards = [];
 var pseudo = '';
 
+// <<<<<<<<<<<< Mise en forme du jeu du joueur >>>>>>>>>>>>>>
+var zindex=10;
+var shiftLeft=0;
+
+  for (var i = 0; i < 8; i++) {
+    // console.log('card'+i);
+    c=$('#card'+i);
+    c.css('z-index', zindex);
+    c.css('left', -shiftLeft);
+    zindex*=10;
+    shiftLeft+=30;
+      // c.on('click',function(event){
+      //   // event.stopPropagation();
+      //   // event.stopImmediatePropagation();
+      //   // var targetCard =this.src.substr(-6,2);
+      //   // socket.emit('play', {card: targetCard, gameID:msg.gameID});
+      //   // this.style.display='none'
+      //   this.src='';
+      //   this.style['z-index']=1;
+      //   // this.css('display','none');
+      // });
+    // c.on('click',function(){
+    //   alert('aa');
+    // });
+  }
+
+
+
+
 $.get('/connectedUsers',function(data){
     data.forEach(function(user){
       $('#userList').append($('<li>').text(user));
@@ -75,9 +104,35 @@ socket.on('disconnection', function(msg){
 
 // <<<<<<<<<<<< Manage my turn to play >>>>>>>>>>>>>>
 socket.on('play', function(msg){
-    var card = prompt('What do you want to play in ' + cards);
+    
+    for (var i = 0; i < 8; i++) {
+      var c=$('#card'+i);
+      // alert(c.src);
+      // alert(c.src);
+      if (c.attr('src')){
+      c.css('border','thin solid red');
+        c.on('click',function(){
+          var isItATen = this.src.substr(-7,2)=='10';
+          var firstIndex = isItATen? -7:-6;
+          var length = isItATen? 3:2;
+          
+          var targetCard =this.src.substr(firstIndex,length);
+          // this.css('display','none');
+          this.src='';
+          this.style['z-index']=1;
+          socket.emit('play', {card: targetCard, gameID:msg.gameID});
+          for (var j = 0; j < 8; j++) {
+            var cc=$('#card'+j);
+            cc.css('border','');
+            cc.unbind('click');
+          }
+        });
+      }
+    }
+
+
+    // var card = prompt('What do you want to play in ' + cards);
     // console.assert()
-    socket.emit('play', {card: card, gameID:msg.gameID});
 });
 // <<<<<<<<<<<< Manage game initialization >>>>>>>>>>>>>>
 socket.on('initialize_game', function(msg){//cards, players, dealer
@@ -92,6 +147,12 @@ socket.on('initialize_game', function(msg){//cards, players, dealer
     // console.log('places['+playername+']='+places[playername]);
     document.getElementById(positions[i]).childNodes[1].innerHTML=playername;
   };
+  // console.log('printing cards for player');
+  for (var i = 0; i < cards.length; i++) {
+    // console.log('card'+i);
+    document.getElementById('card'+i).src='/images/cards/'+msg.cards[i]+'.png';
+  };
+
 });
 // <<<<<<<<<<<< Manage a player played >>>>>>>>>>>>>>
 socket.on('played', function(msg){
