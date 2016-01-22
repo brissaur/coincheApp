@@ -1,1 +1,1 @@
-D:\mongodb\Server\3.2\bin\mongod.exe --dbpath D:\projects\coincheApp\data
+D:\mongodb\Server\3.2\bin\mongod.exe --dbpath D:\dev\projects\coincheApp\data

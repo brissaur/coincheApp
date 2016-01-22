@@ -67,10 +67,11 @@ form button {
       height:77px;
 }
 .cardToBePlayed{
-      position: relative;
+      position: fixed;
 }
 #playerCards{
       text-align: center;
+      padding-left: 100px;
 }
 /*MESSAGE AREA*/
 #messageArea{
@@ -88,4 +89,7 @@ form button {
 }
 .hidden{
       display: none;
+}
+.line{
+      height: 80px;
 }

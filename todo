@@ -1,3 +1,7 @@
+logger les cartes dans OBJET GAME
+finir le set de 8 cartes
+..;
+
 pb des cartes deja joué
 	condition pur rajouter le listener ? curren t= src!='' mais non accessible en jquery
 	chat.js:112

@@ -1,3 +1,24 @@
+// var a = {};
+// a['a'] = 'aa';
+// a['b'] = 'bb';
+// for (e in a){
+// 	console.log(e);
+// }
+// var a2 = [];
+// a2.push('aa');
+// a2.push('bb');
+// for (e in a2){
+// 	console.log(e);
+// }
+// a2.forEach(function(e){
+// 	console.log(e);
+// })
+// //RETURNS ab 01 aabb
+	// console.log(players);
+	// players.forEach(function(pName){
+	// 		console.log(pName);
+
+	// 	test[pName]={};
 // ==============================================================
 // ================== REQUIRES ==================================
 // ==============================================================
@@ -27,6 +48,8 @@ var sharedsession = require("express-socket.io-session");
 
 var auth = require(__dirname+'/modules/authentication');
 var user = require(__dirname +'/modules/user');
+// var Deck = require(__dirname+'/modules/deck');
+var Games = require(__dirname+'/modules/game');
 
 var MongoClient = require('mongodb').MongoClient;
 var url = 'mongodb://localhost:27017/test';
@@ -37,7 +60,6 @@ var bodyParser = require('body-parser'); // Charge le middleware de gestion des 
     extended: true
   })); 
 
-var Deck = require(__dirname+'/modules/deck');
 // ==========================================
 // ==============================================================
 // ================== GLOBAL VARS ===============================
@@ -110,7 +132,7 @@ app.get('/logout', function (req, res){
   req.session.redirectmessage = 'You were successfully disconnected';
   res.redirect('/login');
 });
-app.get('/connectedUsers',auth.checkAuthorized, function (req, res){
+app.get('/connectedUsers',auth.checkAuthorized, function (req, res){//TODO !!!!!!!!
 	var usersToSend = [];
 	for (user in users){
 		if(user!=req.session.user.name){
@@ -118,7 +140,7 @@ app.get('/connectedUsers',auth.checkAuthorized, function (req, res){
 		}
 	}
 	usersToSend.sort();
-    console.dir(usersToSend);
+    // console.dir(usersToSend);
   	res.send(usersToSend);
 });
 // ==============================================================
@@ -132,7 +154,7 @@ io.on('connection', function(socket){
 		socket.emit('connection_accepted', {message:'Connection accepted', name: name});//when connection refused? how?
 		socket.broadcast.emit('connection', {name: name});
 	//TEST
-		// socket.emit('initialize_game', {msg:'', players: ['a','b'], dealer: 'a', cards: ['7H','8H','9H','10H','JH','QH','KH','AH']});
+		// socket.emit('initialize_game', {msg:'', players: ['a','b'], dealer: 'a', cards: ['9H','8S','JC','10H','JH','QH','KH','AH']});
 	} else {
 		socket.emit('connection_refused', {message:'Connection refused. Please refresh your browser (F5).'});//when connection refused? how?
 		socket.disconnect();
@@ -147,8 +169,6 @@ io.on('connection', function(socket){
 			delete users[name];
 		}else{
 			var name='visitor';
-    		// console.dir(users);
-    		// console.dir('this socket id = ' +socket.id);//TODO: probleme doublons qd refresh rapide
 		}
    		console.log(name + ' disconnected.');
 		socket.broadcast.emit('disconnection', {name:name});
@@ -163,77 +183,74 @@ io.on('connection', function(socket){
 	socket.on('game_invitation', function(msg){
 		//TODO: verifier que users.game = null (= quil peut etre invité)
 		var name = socket.handshake.session.user.name;
-		//créer un namespace ET SEN RAPELLER
+		//créer un namespace ET SEN RAPELLER -> dans Games[]
 	    console.log('Game invitation from '+ name + ' for '+ msg.players);
-	    var gameID = Math.floor((Math.random() * 1000));
+	    
+	    var gameID = Games.invite(msg.players);
+	    Games.accept(gameID,name);
 	    //TODO: set Timeout si client rep pas
-	    // var gamePlayers = msg.players;
-	    var gamePlayers = [];
     	msg.players.forEach(function(pName){
 			assert(users[pName]);
-	    	users[pName].game = {gameID:gameID, accepted:false};
-		    gamePlayers.push(pName);//plus sécuriser
+	    	users[pName].game = {gameID:gameID};//, accepted:false}; ---> ca veut dire quil es toccupé par une game quil ait accepte ou pas
 		});
 		//sender auto accepts
-		users[name].game.accepted=true;
-	    rooms[gameID] = {players: gamePlayers,  currentPlayer:null, currentDealer:null, firstTrickPlayer:null, deck:null}//comment on check ils acceptent
+	    // rooms[gameID] = {players: gamePlayers,  currentPlayer:null, currentDealer:null, firstTrickPlayer:null, deck:null}//comment on check ils acceptent
 	    socket.broadcast.emit('game_invitation', {name: name, message: '', gameID: gameID});//TODO EVOL roadcast+print local
   	});
 	socket.on('game_invitation_accepted', function(msg){//msg-> gameID
 		var name = socket.handshake.session.user.name;
-	    var thisRoom = rooms[msg.gameID];
-	    if (thisRoom){
-	    	//TODO: check player est dedans la room
-		    console.log('Game invitation accepted by '+ name);
-		    assert(users[name].game);
-		    users[name].game.accepted=true;;
-		    var gameMustStart=true;
-			thisRoom.players.forEach(function(pName){
-				assert(users[pName]);
-				assert(users[pName].game);
-				console.log(pName+'-->'+users[pName].game.accepted);
-				gameMustStart = gameMustStart && users[pName].game.accepted;
+	    // var thisRoom = rooms[msg.gameID];
+	    assert(users[name]);
+	    assert(users[name].game);
+	    assert(users[name].game.gameID==msg.gameID);
+
+		Games.accept(msg.gameID, name);
+		if (Games.readyToStart(msg.gameID)){
+			console.log('Game ready to start');
+			Games.init(msg.gameID, function(game){
+				thisGame = game;
+				thisGame.start(function(){
+					for (pIndex in thisGame.playersIndexes){
+						var pName = thisGame.playersIndexes[pIndex];
+						console.log(thisGame.players[pName]);
+						io.to(users[pName].socket).emit('initialize_game', 
+							{msg:'', players: thisGame.playersIndexes, dealer: thisGame.currentDealer, cards: thisGame.players[pName].cards});
+					}
+					io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('play', {gameID:msg.gameID});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
+
+				});
 			});
-
-		    if (gameMustStart){
-				console.log('initialize_game');
-
-		    	nbPlayers = thisRoom.players.length;
-		    	assert(nbPlayers==MAXPLAYER);
-		    	rand=Math.floor((Math.random() * MAXPLAYER));
-				thisRoom.currentDealer=rand;
-				thisRoom.firstTrickPlayer=(rand+1)%MAXPLAYER;
-				thisRoom.currentPlayer=(rand+1)%MAXPLAYER;
-				thisRoom.deck=Deck.newDeck();
-				thisRoom.deck.shuffle();
-				thisRoom.deck.shuffle();
-				cards=thisRoom.deck.distribute();
-
-				for (pIndex in thisRoom.players){
-					users[thisRoom.players[pIndex]].game.cards=cards[pIndex];
-					io.to(users[thisRoom.players[pIndex]].socket).emit('initialize_game', {msg:'', players: thisRoom.players, dealer: thisRoom.currentDealer, cards: cards[pIndex]});
-				}
-
-				io.to(users[thisRoom.players[thisRoom.currentPlayer]].socket).emit('play', {gameID:msg.gameID});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
-				// console.log(users[thisRoom.players[thisRoom.currentPlayer]].socket);
-				// console.log(thisRoom.players[thisRoom.currentPlayer]);
-		    }
-
-		} else {
-			console.log('game ' + msg.gameID + ' already cancelled');
 		}
+
+			// var cards=thisGame.deck.distribute();
+			// for (pIndex in thisGame.players){
+			// 	users[thisGame.players[pIndex]].game.cards=cards[pIndex];
+			// 	io.to(users[thisGame.players[pIndex]].socket).emit('initialize_game', {msg:'', players: thisGame.players, dealer: thisGame.currentDealer, cards: cards[pIndex]});
+			// }
+
+			// 	io.to(users[thisGame.players[thisGame.currentPlayer]].socket).emit('play', {gameID:msg.gameID});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
+				// console.log(users[thisGame.players[thisGame.currentPlayer]].socket);
+				// console.log(thisGame.players[thisGame.currentPlayer]);
 	    // io.emit('game_invitation', {name: users[socket.id].name, message: '', gameID: Math.floor((Math.random() * 1000))});//TODO EVOL roadcast+print local
   	});
 	socket.on('game_invitation_refused', function(msg){
 		var name = socket.handshake.session.user.name;
 	    console.log('Game invitation refused by '+ name);
+	    
 	    io.emit('game_invitation_cancelled', {message:'', gameID: msg.gameID, name:name});
-	    rooms[msg.gameID].players.forEach(function(pName){
+	    Games.game(msg.gameID).playersIndexes().forEach(function(pName){
 	    	assert(users[pName]);
 	    	assert(users[pName].game);
-	    	users[pName].game = null;
-	    });
-	    delete rooms[msg.gameID];
+	    	users[pName].game=null;
+	    })
+	    Games.refuse(msg.gameID, name);
+	    
+	    // rooms[msg.gameID].players.forEach(function(pName){
+	    // 	assert(users[pName]);
+	    // 	assert(users[pName].game);
+	    // 	users[pName].game = null;
+	    // });
+	    // delete rooms[msg.gameID];
 	    // io.emit('game_invitation', {name: users[socket.id].name, message: '', gameID: Math.floor((Math.random() * 1000))});//TODO EVOL roadcast+print local
   	});
 	// <<<<<<<<<<<< Manage a player plays >>>>>>>>>>>>>>
@@ -241,7 +258,7 @@ io.on('connection', function(socket){
   		var thisRoom = rooms[msg.gameID];
   		var thisGame = rooms[msg.gameID].game;
 		var name = socket.handshake.session.user.name;
-
+  		//VERIFICATIONS
   		assert(thisRoom);
   		assert(users[name]);
   		assert(thisRoom.players.indexOf(name)!=-1);
