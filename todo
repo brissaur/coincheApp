@@ -1,3 +1,9 @@
+emit 'pplayed' lors d un play et setTimer sur la fin de plie
+
+
+
+
+
 logger les cartes dans OBJET GAME
 finir le set de 8 cartes
 ..;
@@ -14,7 +20,7 @@ _______________
 liste des joueurs connectés sur la gauche
 invite game
 accept game
-start game
+start GAME
 //
 
 

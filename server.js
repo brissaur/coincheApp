@@ -64,7 +64,6 @@ var bodyParser = require('body-parser'); // Charge le middleware de gestion des 
 // ==============================================================
 // ================== GLOBAL VARS ===============================
 // ==============================================================
-var AUTHORIZEDCARDS=['7H','8H','9H','10H','JH','QH','KH','AH','7D','8D','9D','10D','JD','QD','KD','AD','7S','8S','9S','10S','JS','QS','KS','AS','7C','8C','9C','10C','JC','QC','KC','AC'];
 var MAXPLAYER=2;
 var TIMEUNIT = 1000;
 var PORT = 3000;
@@ -255,39 +254,20 @@ io.on('connection', function(socket){
   	});
 	// <<<<<<<<<<<< Manage a player plays >>>>>>>>>>>>>>
   	socket.on('play', function(msg){//.card + .player + .firstPlayer
-  		var thisRoom = rooms[msg.gameID];
-  		var thisGame = rooms[msg.gameID].game;
 		var name = socket.handshake.session.user.name;
   		//VERIFICATIONS
-  		assert(thisRoom);
   		assert(users[name]);
-  		assert(thisRoom.players.indexOf(name)!=-1);
-  		assert(users[name].game.gameID==msg.gameID);
-  		assert(thisRoom.players.indexOf(name)===thisRoom.currentPlayer);
-
-  		assert(AUTHORIZEDCARDS.indexOf(msg.card)!=-1, 'AUTHORIZEDCARDS.indexOf(msg.card): ' + AUTHORIZEDCARDS.indexOf(msg.card) +' ' + msg.card);
-  		//remove played card from hand
-  		var cardIndex = users[name].game.cards.indexOf(msg.card);
-  	// 	console.log(msg.cards);
-  	// 	console.log(users[name].game.cards);
- 		// console.log(cardIndex);
-  		users[name].game.cards;
-  		assert(cardIndex!=-1, 'User played '+msg.card+' but available cards should be '+ users[name].game.cards);
-  		users[name].game.cards.splice(cardIndex, 1);
-
-		io.emit('played', {name: name, card:msg.card});
-		if (thisRoom.firstTrickPlayer==((thisRoom.currentPlayer+1)%MAXPLAYER)){
-			setTimeout(function(){
+  		var thisGame = Games.game(msg.gameID);
+  		thisGame.play(name, msg.card,function(endTrick){
+			io.emit('played', {name: name, card:msg.card});
+			if (endTrick){
 				console.log('endTrick');
 				io.emit('end_trick', {message:'trick well ended'});
-				thisRoom.currentPlayer = Math.floor((Math.random() * MAXPLAYER));//TODO EVOL: calculé quia  gagné le pli
-				thisRoom.firstTrickPlayer = thisRoom.currentPlayer;
-				io.to(users[thisRoom.players[thisRoom.currentPlayer]].socket).emit('play', {message:'',gameID:msg.gameID});	
-			},2*TIMEUNIT);
-		} else {
-			thisRoom.currentPlayer=(thisRoom.currentPlayer+1)%MAXPLAYER;
-			io.to(users[thisRoom.players[thisRoom.currentPlayer]].socket).emit('play', {gameID:msg.gameID});	
-		}
+				io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('play', {message:'',gameID:msg.gameID});	
+			} else {
+				io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('play', {message:'',gameID:msg.gameID});	
+			}//TODO: END 8cardGame
+  		});
   	});
 });
 

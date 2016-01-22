@@ -8,6 +8,8 @@ var games = {};
 var invites = {};
 
 var MAXPLAYER=2;
+var AUTHORIZEDCARDS=['7H','8H','9H','10H','JH','QH','KH','AH','7D','8D','9D','10D','JD','QD','KD','AD','7S','8S','9S','10S','JS','QS','KS','AS','7C','8C','9C','10C','JC','QC','KC','AC'];
+
 
 // ==============================================================
 // ================== INVITATIONS ===================================
@@ -124,6 +126,29 @@ function Game(id, players){
 		};
 		// console.log(this.players);
 		// console.log('////////////////////');
+	}
+
+	this.play = function(name, card, callback){
+  		assert(this.playersIndexes.indexOf(name)!=-1);
+  		assert(this.playersIndexes.indexOf(name)===this.currentPlayer);
+
+  		assert(AUTHORIZEDCARDS.indexOf(card)!=-1, 'AUTHORIZEDCARDS.indexOf(card): ' + AUTHORIZEDCARDS.indexOf(card) +' ' + card);
+  		//remove played card from hand
+  		var cardIndex = this.players[name].cards.indexOf(card);
+  	// 	console.log(cards);
+  	// 	console.log(users[name].game.cards);
+ 		// console.log(cardIndex);
+  		assert(cardIndex!=-1, 'User played '+card+' but available cards should be '+ this.players[name].cards);
+  		this.players[name].cards.splice(cardIndex, 1);
+		
+		var endTrick = this.firstTrickPlayer==((this.currentPlayer+1)%this.nbPlayers);
+		if (endTrick){
+			this.currentPlayer = Math.floor((Math.random() * this.nbPlayers));//TODO EVOL: calculé quia  gagné le pli
+			this.firstTrickPlayer = this.currentPlayer;
+		} else {
+			this.currentPlayer=(this.currentPlayer+1)%this.nbPlayers;
+		}
+  		callback(endTrick);
 	}
 
 	// cards=thisRoom.deck.distribute();
