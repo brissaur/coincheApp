@@ -13,6 +13,7 @@ var distribute = function(cards){
     c.className = "card cardToBePlayed";
     c.style['z-index']=zindex
     c.style.left=shiftLeft+100;//('left', shiftLeft+100);
+    c.id=cards[i];
     zindex*=10;
     shiftLeft+=30;
     playerCards.append(c);
@@ -20,8 +21,10 @@ var distribute = function(cards){
   //TODO: print 8 cards for other player
 }
 
-var timeToPlay = function(gameID){
-  $('#playerCards').children()
+var timeToPlay = function(gameID, cards){
+  // $('#messages').append($('<li>').text('I can play...' + cards));
+  cards.forEach(function(card){
+    $('#'+card)
       .css('border','thin solid red')
       .on('click', function (event){
         var isItATen = this.src.substr(-7,2)=='10';
@@ -32,8 +35,23 @@ var timeToPlay = function(gameID){
         socket.emit('play', {card: targetCard, gameID:gameID});
         $('#playerCards').children().css('border','').unbind('click');
         this.parentNode.removeChild(this);
-      });
+    });
+  });
+  // $('#playerCards').children()//TODO que celles qui ont le droit
+  //     .css('border','thin solid red')
+  //     .on('click', function (event){
+  //       var isItATen = this.src.substr(-7,2)=='10';
+  //       var firstIndex = isItATen? -7:-6;
+  //       var length = isItATen? 3:2;
+  //       var targetCard =this.src.substr(firstIndex,length);
+
+  //       socket.emit('play', {card: targetCard, gameID:gameID});
+  //       $('#playerCards').children().css('border','').unbind('click');
+  //       this.parentNode.removeChild(this);
+  //     });
 }
+
+
 
 // distribute(testcards); 
 

@@ -103,7 +103,7 @@ socket.on('disconnection', function(msg){
 
 // <<<<<<<<<<<< Manage my turn to play >>>>>>>>>>>>>>
 socket.on('play', function(msg){
-      timeToPlay(msg.gameID);
+      timeToPlay(msg.gameID, msg.cards);
 });
 // <<<<<<<<<<<< Manage game initialization >>>>>>>>>>>>>>
 socket.on('initialize_game', function(msg){//cards, players, dealer
@@ -145,7 +145,7 @@ socket.on('end_trick', function(msg){
     // document.getElementById(places[divs]).childNodes[0].src='';
   }
 });
-socket.on('end_XXXXX', function(msg){
+socket.on('end_jetee', function(msg){
   $('#messages').append($('<li>').text(msg.message));
   distribute(cards);
   // for(divs in places){

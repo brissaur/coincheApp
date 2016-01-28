@@ -1,24 +1,3 @@
-// var a = {};
-// a['a'] = 'aa';
-// a['b'] = 'bb';
-// for (e in a){
-// 	console.log(e);
-// }
-// var a2 = [];
-// a2.push('aa');
-// a2.push('bb');
-// for (e in a2){
-// 	console.log(e);
-// }
-// a2.forEach(function(e){
-// 	console.log(e);
-// })
-// //RETURNS ab 01 aabb
-	// console.log(players);
-	// players.forEach(function(pName){
-	// 		console.log(pName);
-
-	// 	test[pName]={};
 // ==============================================================
 // ================== REQUIRES ==================================
 // ==============================================================
@@ -215,7 +194,8 @@ io.on('connection', function(socket){
 						io.to(users[pName].socket).emit('initialize_game', 
 							{msg:'', players: thisGame.playersIndexes, dealer: thisGame.currentDealer, cards: thisGame.players[pName].cards});
 					}
-					io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('play', {gameID:msg.gameID});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
+					// console.log('playable cards: ' + 'trump=' + thisGame.currentTrump + '&currentColor=' + thisGame.colorPlayed() + '&cards=' + thisGame.playableCards());
+					io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('play', {gameID:msg.gameID, cards:thisGame.playableCards(), msg:''});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
 
 				});
 			});
@@ -239,30 +219,42 @@ io.on('connection', function(socket){
   	socket.on('play', function(msg){//.card + .player + .firstPlayer
 		var name = socket.handshake.session.user.name;
   		//VERIFICATIONS
+  		// console.log('play');
   		assert(users[name]);
   		var thisGame = Games.game(msg.gameID);
-  		thisGame.play(name, msg.card,function(endTrick, endXXXXX){
+  		thisGame.play(name, msg.card,function(endTrick, endJetee, endGame){
 			io.emit('played', {name: name, card:msg.card});//TODO: Gérer les erreurs
-			if (endXXXXX){
-				console.log('endXXXXX');
+			if (endGame){
+				// console.log('endJetee');
+				// setTimeout(function(){
+				// 	io.emit('end_trick', {message:'trick well ended'});
+				// 	for (pIndex in thisGame.playersIndexes){
+				// 		var pName = thisGame.playersIndexes[pIndex];
+				// 		io.to(users[pName].socket).emit('end_jetee', 
+				// 			{message:'jetee well ended', cards: thisGame.players[pName].cards});
+				// 	}
+				// 	// io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('play', {message:'',gameID:msg.gameID});	
+				// },2*TIMEUNIT);
+			} else if (endJetee){
+				console.log('endJetee');
 				setTimeout(function(){
 					io.emit('end_trick', {message:'trick well ended'});
 					for (pIndex in thisGame.playersIndexes){
 						var pName = thisGame.playersIndexes[pIndex];
-						io.to(users[pName].socket).emit('end_XXXXX', 
-							{message:'XXXXX well ended', cards: thisGame.players[pName].cards});
+						io.to(users[pName].socket).emit('end_jetee', 
+							{message:'jetee well ended', cards: thisGame.players[pName].cards});
 					}
-					// io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('play', {message:'',gameID:msg.gameID});	
+					io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('play', {message:'',gameID:msg.gameID,cards: thisGame.playableCards()});	
 				},2*TIMEUNIT);
 				
 			} else if (endTrick){
-				console.log('endTrick');
 				setTimeout(function(){
 					io.emit('end_trick', {message:'trick well ended'});
-					io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('play', {message:'',gameID:msg.gameID});	
+					io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('play', {message:'',gameID:msg.gameID, cards: thisGame.playableCards()});	
 				},0*TIMEUNIT);
 			} else {
-				io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('play', {message:'',gameID:msg.gameID});	
+				// console.log('playable cards: ' + 'trump=' + thisGame.currentTrump + '&currentColor=' + thisGame.colorPlayed() + '&cards=' + thisGame.playableCards());
+				io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('play', {message:'',gameID:msg.gameID, cards: thisGame.playableCards()});	
 			}//TODO: END 8cardGame
   		});
   	});
