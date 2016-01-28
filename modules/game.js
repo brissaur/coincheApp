@@ -55,7 +55,7 @@ function readyToStart(inviteID){
 }
 
 // ==============================================================
-// ================== GAME ===================================
+// ================== GAME ADMIN===================================
 // ==============================================================
 exports.init = init;
 function init(gameID, callback){
@@ -108,7 +108,7 @@ function Game(id, players){
 	this.deck=Deck.newDeck();
 	this.deck.shuffle();
 
-	this.start = function(callback){
+	this.start = function(callback){//callback()
 		this.distribute();
 		callback();
 	}
@@ -127,6 +127,9 @@ function Game(id, players){
 		// console.log(this.players);
 		// console.log('////////////////////');
 	}
+// ==============================================================
+// ================== GAME RULES ===================================
+// ==============================================================
 
 	this.play = function(name, card, callback){
   		assert(this.playersIndexes.indexOf(name)!=-1);

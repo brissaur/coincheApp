@@ -122,13 +122,27 @@ socket.on('initialize_game', function(msg){//cards, players, dealer
 });
 // <<<<<<<<<<<< Manage a player played >>>>>>>>>>>>>>
 socket.on('played', function(msg){
-  document.getElementById(places[msg.name]).childNodes[0].src='/images/cards/'+msg.card+'.png';
+  var targetCard = document.getElementById(places[msg.name]);
+  // console.log('played');
+  var c = document.createElement('img');
+    c.src='/images/cards/'+msg.card+'.png';
+    c.className = "card";
+  //   c.style['z-index']=zindex
+  //   c.style.left=shiftLeft+100;//('left', shiftLeft+100);
+  //   zindex*=10;
+  //   shiftLeft+=30;
+    targetCard.appendChild(c);
+  // .childNodes[0].src='/images/cards/'+msg.card+'.png';
 });
 // <<<<<<<<<<<< Manage end of a trick >>>>>>>>>>>>>>
 socket.on('end_trick', function(msg){
   $('#messages').append($('<li>').text(msg.message));
   for(divs in places){
-    document.getElementById(places[divs]).childNodes[0].src='';
+    var child = document.getElementById(places[divs]).childNodes[1];
+    if (child){
+      child.parentNode.removeChild(child);
+    }
+    // document.getElementById(places[divs]).childNodes[0].src='';
   }
 });
 

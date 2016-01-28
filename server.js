@@ -221,16 +221,6 @@ io.on('connection', function(socket){
 			});
 		}
 
-			// var cards=thisGame.deck.distribute();
-			// for (pIndex in thisGame.players){
-			// 	users[thisGame.players[pIndex]].game.cards=cards[pIndex];
-			// 	io.to(users[thisGame.players[pIndex]].socket).emit('initialize_game', {msg:'', players: thisGame.players, dealer: thisGame.currentDealer, cards: cards[pIndex]});
-			// }
-
-			// 	io.to(users[thisGame.players[thisGame.currentPlayer]].socket).emit('play', {gameID:msg.gameID});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
-				// console.log(users[thisGame.players[thisGame.currentPlayer]].socket);
-				// console.log(thisGame.players[thisGame.currentPlayer]);
-	    // io.emit('game_invitation', {name: users[socket.id].name, message: '', gameID: Math.floor((Math.random() * 1000))});//TODO EVOL roadcast+print local
   	});
 	socket.on('game_invitation_refused', function(msg){
 		var name = socket.handshake.session.user.name;
@@ -244,13 +234,6 @@ io.on('connection', function(socket){
 	    })
 	    Games.refuse(msg.gameID, name);
 	    
-	    // rooms[msg.gameID].players.forEach(function(pName){
-	    // 	assert(users[pName]);
-	    // 	assert(users[pName].game);
-	    // 	users[pName].game = null;
-	    // });
-	    // delete rooms[msg.gameID];
-	    // io.emit('game_invitation', {name: users[socket.id].name, message: '', gameID: Math.floor((Math.random() * 1000))});//TODO EVOL roadcast+print local
   	});
 	// <<<<<<<<<<<< Manage a player plays >>>>>>>>>>>>>>
   	socket.on('play', function(msg){//.card + .player + .firstPlayer
@@ -259,11 +242,13 @@ io.on('connection', function(socket){
   		assert(users[name]);
   		var thisGame = Games.game(msg.gameID);
   		thisGame.play(name, msg.card,function(endTrick){
-			io.emit('played', {name: name, card:msg.card});
+			io.emit('played', {name: name, card:msg.card});//TODO: Gérer les erreurs
 			if (endTrick){
 				console.log('endTrick');
-				io.emit('end_trick', {message:'trick well ended'});
-				io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('play', {message:'',gameID:msg.gameID});	
+				setTimeout(function(){
+					io.emit('end_trick', {message:'trick well ended'});
+					io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('play', {message:'',gameID:msg.gameID});	
+				},2*TIMEUNIT);
 			} else {
 				io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('play', {message:'',gameID:msg.gameID});	
 			}//TODO: END 8cardGame
