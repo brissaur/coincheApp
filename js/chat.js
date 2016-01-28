@@ -145,4 +145,14 @@ socket.on('end_trick', function(msg){
     // document.getElementById(places[divs]).childNodes[0].src='';
   }
 });
+socket.on('end_XXXXX', function(msg){
+  $('#messages').append($('<li>').text(msg.message));
+  distribute(cards);
+  // for(divs in places){
+  //   var child = document.getElementById(places[divs]).childNodes[1];
+  //   if (child){
+  //     child.parentNode.removeChild(child);
+  //   }
+    // document.getElementById(places[divs]).childNodes[0].src='';
+});
 

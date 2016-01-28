@@ -96,6 +96,7 @@ function Game(id, players){
 	for(index in players){
 		this.players[players[index]]={};
 	}
+	//TODO: add team numbers 0 / 1
 	this.nbPlayers=players.length;
 
 	rand=Math.floor((Math.random() * this.nbPlayers));
@@ -107,6 +108,11 @@ function Game(id, players){
 	this.firstTrickPlayer=(rand+1)%this.nbPlayers;
 	this.deck=Deck.newDeck();
 	this.deck.shuffle();
+
+	this.currentTrickIndex = 0;
+	this.currentTrick=[];
+	this.lastTrick=[];
+
 
 	this.start = function(callback){//callback()
 		this.distribute();
@@ -130,8 +136,8 @@ function Game(id, players){
 // ==============================================================
 // ================== GAME RULES ===================================
 // ==============================================================
-
-	this.play = function(name, card, callback){
+//When a player plays a card
+	this.play = function(name, card, callback){//callback(endTrick)
   		assert(this.playersIndexes.indexOf(name)!=-1);
   		assert(this.playersIndexes.indexOf(name)===this.currentPlayer);
 
@@ -144,14 +150,33 @@ function Game(id, players){
   		assert(cardIndex!=-1, 'User played '+card+' but available cards should be '+ this.players[name].cards);
   		this.players[name].cards.splice(cardIndex, 1);
 		
-		var endTrick = this.firstTrickPlayer==((this.currentPlayer+1)%this.nbPlayers);
+		this.currentTrick.push(card);//TODO : order 
+
+		// var endTrick = this.firstTrickPlayer==((this.currentPlayer+1)%this.nbPlayers);
+		var endTrick = this.currentTrick.length == this.nbPlayers;
+		var endXXXXX = false;
 		if (endTrick){
-			this.currentPlayer = Math.floor((Math.random() * this.nbPlayers));//TODO EVOL: calculé quia  gagné le pli
-			this.firstTrickPlayer = this.currentPlayer;
+			this.currentTrick = [];
+			endXXXXX = this.currentTrickIndex == 7;
+			if(endXXXXX){
+				//compter les points
+				this.distribute();
+				
+				this.lastTrick = [];
+				this.currentTrickIndex = 0;
+				this.currentDealer = (this.currentDealer+1)%this.nbPlayers
+				this.firstTrickPlayer = (this.currentDealer+1)%this.nbPlayers;
+			} else {
+				this.lastTrick = this.currentTrick;
+				this.currentTrickIndex++;
+				this.currentPlayer = Math.floor((Math.random() * this.nbPlayers));//TODO EVOL: calculé quia  gagné le pli
+				this.firstTrickPlayer = this.currentPlayer;
+
+			}
 		} else {
 			this.currentPlayer=(this.currentPlayer+1)%this.nbPlayers;
 		}
-  		callback(endTrick);
+  		callback(endTrick, endXXXXX);
 	}
 
 	// cards=thisRoom.deck.distribute();

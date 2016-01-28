@@ -241,14 +241,26 @@ io.on('connection', function(socket){
   		//VERIFICATIONS
   		assert(users[name]);
   		var thisGame = Games.game(msg.gameID);
-  		thisGame.play(name, msg.card,function(endTrick){
+  		thisGame.play(name, msg.card,function(endTrick, endXXXXX){
 			io.emit('played', {name: name, card:msg.card});//TODO: Gérer les erreurs
-			if (endTrick){
+			if (endXXXXX){
+				console.log('endXXXXX');
+				setTimeout(function(){
+					io.emit('end_trick', {message:'trick well ended'});
+					for (pIndex in thisGame.playersIndexes){
+						var pName = thisGame.playersIndexes[pIndex];
+						io.to(users[pName].socket).emit('end_XXXXX', 
+							{message:'XXXXX well ended', cards: thisGame.players[pName].cards});
+					}
+					// io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('play', {message:'',gameID:msg.gameID});	
+				},2*TIMEUNIT);
+				
+			} else if (endTrick){
 				console.log('endTrick');
 				setTimeout(function(){
 					io.emit('end_trick', {message:'trick well ended'});
 					io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('play', {message:'',gameID:msg.gameID});	
-				},2*TIMEUNIT);
+				},0*TIMEUNIT);
 			} else {
 				io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('play', {message:'',gameID:msg.gameID});	
 			}//TODO: END 8cardGame
