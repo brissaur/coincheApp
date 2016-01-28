@@ -46,11 +46,11 @@ function refuse(inviteID, player){
 exports.readyToStart = readyToStart;
 function readyToStart(inviteID){
 	assert(invites[inviteID]);
-	assert(invites[inviteID]);
 	var gameMustStart = true;
-	invites[inviteID].forEach(function (hasAccepted){
-		gameMustStart = gameMustStart && hasAccepted;
-	});
+	for (index in invites[inviteID]){
+		gameMustStart = gameMustStart && invites[inviteID][index];
+		
+	}
 	return gameMustStart;
 }
 

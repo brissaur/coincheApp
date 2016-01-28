@@ -251,7 +251,7 @@ io.on('connection', function(socket){
 				setTimeout(function(){
 					io.emit('end_trick', {message:'trick well ended'});
 					io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('play', {message:'',gameID:msg.gameID, cards: thisGame.playableCards()});	
-				},0*TIMEUNIT);
+				},1*TIMEUNIT);
 			} else {
 				// console.log('playable cards: ' + 'trump=' + thisGame.currentTrump + '&currentColor=' + thisGame.colorPlayed() + '&cards=' + thisGame.playableCards());
 				io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('play', {message:'',gameID:msg.gameID, cards: thisGame.playableCards()});	
