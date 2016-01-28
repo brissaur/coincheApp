@@ -20,19 +20,6 @@ var shiftLeft=0;
     c.css('left', shiftLeft+100);
     zindex*=10;
     shiftLeft+=30;
-      // c.on('click',function(event){
-      //   // event.stopPropagation();
-      //   // event.stopImmediatePropagation();
-      //   // var targetCard =this.src.substr(-6,2);
-      //   // socket.emit('play', {card: targetCard, gameID:msg.gameID});
-      //   // this.style.display='none'
-      //   this.src='';
-      //   this.style['z-index']=1;
-      //   // this.css('display','none');
-      // });
-    // c.on('click',function(){
-    //   alert('aa');
-    // });
   }
 
 
@@ -81,8 +68,8 @@ socket.on('connection', function(msg){
   //TODO sort
 });
 socket.on('connection_accepted', function(msg){
-  $('#userList').append($('<li>').text(msg.name));
-  pseudo=msg.name;
+  // $('#userList').append($('<li>').text(msg.name));
+  // pseudo=msg.name;
 });
 socket.on('connection_refused', function(msg){
   $('#messages').append($('<li>').text(msg.message));
@@ -90,15 +77,17 @@ socket.on('connection_refused', function(msg){
 // <<<<<<<<<<<< Manage new disconnection >>>>>>>>>>>>>>
 socket.on('disconnection', function(msg){
   $('#messages').append($('<li>').text(msg.name + ' disconnected.'));
-  var children = $('#userList').childNodes;
-  if (children){
-    children.forEach(function(li){//TODO pb si aucun enfant;
-      // console.log(li.text);
-      if(li.text==msg.name){
-        li.parentNode.removeChild(li);
+  $('#userList').children().each(function(index, element){//TODO pb si aucun enfant;
+      // console.log(this.text);
+      // console.log(index);
+      // console.log(element);
+      // console.log($(this).text());
+      // console.log(element.text());
+      if($(this).text()==msg.name){
+        // $(this).parents().removeChild($(this));
+        $(this).remove();
       }
     });
-  }
 });
 
 // <<<<<<<<<<<< Manage my turn to play >>>>>>>>>>>>>>

@@ -112,13 +112,14 @@ app.get('/logout', function (req, res){
 });
 app.get('/connectedUsers',auth.checkAuthorized, function (req, res){//TODO !!!!!!!!
 	var usersToSend = [];
-	for (user in users){
-		if(user!=req.session.user.name){
-			usersToSend.push(user);//TODO: tester pk KO
+	for (index in users){
+		if(users[index].name!=req.session.user.name){
+			usersToSend.push(users[index].name);//TODO: tester pk KO
 		}
 	}
-	usersToSend.sort();
+	// usersToSend.sort();
     // console.dir(usersToSend);
+    console.log(req.session.user.name + '-->' + usersToSend);
   	res.send(usersToSend);
 });
 // ==============================================================
