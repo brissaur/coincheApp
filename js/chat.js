@@ -54,7 +54,13 @@ socket.on('game_invitation_cancelled', function(msg){//gameID, name,
 // <<<<<<<<<<<< Receive chat message >>>>>>>>>>>>>>
 socket.on('chat_message', function(msg){
   $('#messages').append($('<li>').text(msg.name + ': ' +msg.message));//TODO EVOL scroll down auto
+  // $('#chatWindow').animate({scrollTop: $('#chatWindow').prop(&quot;scrollHeight&quot;)}, 500);
 });
+
+// socket.on('chat message', function(msg){
+//     $('#messages').append($('<li>').text(msg));
+//   });
+
 // <<<<<<<<<<<< Manage authentification >>>>>>>>>>>>>>
 // socket.on('identification_required', function(msg){
 //   // console.log(pseudo);
@@ -69,7 +75,7 @@ socket.on('connection', function(msg){
 });
 socket.on('connection_accepted', function(msg){
   // $('#userList').append($('<li>').text(msg.name));
-  // pseudo=msg.name;
+  pseudo=msg.name;
 });
 socket.on('connection_refused', function(msg){
   $('#messages').append($('<li>').text(msg.message));
@@ -98,11 +104,15 @@ socket.on('play', function(msg){
 socket.on('initialize_game', function(msg){//cards, players, dealer
   // var dealer = msg.dealer;//TODO button
   // debugger;
+  console.log(msg);
+  console.log({pseudo: pseudo});
   var myIndex = msg.players.indexOf(pseudo);
   cards = msg.cards;
-  $('#messages').append($('<li>').text('Starting Game...' + cards));
+  // $('#messages').append($('<li>').text('Starting Game...' + cards));
   for (var i = 0; i <msg.players.length; i++) {
-    playername = msg.players[(i+myIndex)%msg.players.length];
+    var playername = msg.players[(i+myIndex)%msg.players.length];
+    console.log(playername);
+    console.log({i: i, myIndex: myIndex, nbPlayers:msg.players.length});
     places[playername]=positions[i];
     // console.log('places['+playername+']='+places[playername]);
     document.getElementById(positions[i]).childNodes[0].innerHTML=playername;

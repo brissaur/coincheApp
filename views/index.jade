@@ -4,58 +4,40 @@ block css
 block content
 	.container-fluid
 		.row
-			#board.col-sm-6
+			#board.col-xs-10
 				#playarea
 					.row.line
-						.col-sm-5
-						.col-sm-2
+						.col-xs-2.col-xs-offset-5
 							div.player#topPlayer
-								//- img.card
 								span.playerName
-						.col-sm-5
 					.row.line
-						.col-sm-2
+						.col-xs-2
 							div.player#leftPlayer
-								//- img.card
 								span.playerName
-						.col-sm-8
-						.col-sm-2
+						.col-xs-2.col-xs-offset-8
 							div.player#rightPlayer
-								//- img.card
 								span.playerName
 					.row.line
-						.col-sm-5
-						.col-sm-2
+						.col-xs-2.col-xs-offset-5
 							div.player#bottomPlayer
-								//- img.card
 								span.playerName
-						.col-sm-5
-							//- div.boardOptions
-							//-   button(onclick="invitePlayers();") Invite players
 				.row
-					.col-sm-12
+					.col-xs-12
 						div#playerCards
-							//- p test
-							//- img.card.cardToBePlayed#card0
-							//- img.card.cardToBePlayed#card1
-							//- img.card.cardToBePlayed#card2
-							//- img.card.cardToBePlayed#card3
-							//- img.card.cardToBePlayed#card4
-							//- img.card.cardToBePlayed#card5
-							//- img.card.cardToBePlayed#card6
-							//- img.card.cardToBePlayed#card7
-			.col-sm-4#messageArea
-				label.well Messages
-				ul#messages
-			.col-sm-2#usersArea
-				label.well Connected Users
+			.col-xs-2#usersArea
+				label Coupaings
 					a(href='/logout',style="display:block;") Disconnect #{session.user.name}
 				ul#userList
 				button(onclick='invitePlayers();', style='margin-bottom:100px') Invite
-		
-		form(action='')
-			input#m(autocomplete='off')
-			button Send
+		.row
+			.col-xs-12#chatWindow
+				//- label Messages
+				ul#messages
+		.row
+			.col-xs-12#messageForm
+				form(action='')
+					input#m(autocomplete='off')
+					button.hidden Send
 block scripts
 	script(src='/node_modules/socket.io-client/socket.io.js')
 	script(src='/js/chat.js')

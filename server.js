@@ -71,6 +71,9 @@ app.use(function(req,res,next){
 app.get('/', auth.checkAuthorized, function(req, res){
 	res.render('index');
 });
+app.get('/test', function(req, res){
+	res.render('test');
+});
 app.get('/home', auth.checkAuthorized, function(req, res){
   res.redirect('/');
 });

@@ -1,0 +1,11 @@
+extends template
+block css
+	link(href='/css/test.css', rel='stylesheet')
+block content
+	#chatWindow
+      ul#messages
+    form(action='')
+      input#m(autocomplete='off', autofocus)
+      button Send
+block scripts
+	script(src='/js/test.js')
