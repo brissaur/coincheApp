@@ -264,13 +264,18 @@ io.on('connection', function(socket){
 				if (finalAnnounce.value == 0){//TODO: next game
 					console.log('all passed');
 					thisGame.nextJetee(function(){
+						console.log('next game after all passed');
 						for (pIndex in thisGame.playersIndexes){
+							var pName = thisGame.playersIndexes[pIndex];
+							console.log('redistribution to ...'+ pName);
 							io.to(users[pName].socket).emit('distribution', 
+								// {msg:'', cards: ['8H','9H','10H','JH','AS','10S','9D','7D']});
 								{msg:'', cards: thisGame.players[pName].cards});
 						}
 						// console.log('playable cards: ' + 'trump=' + thisGame.currentTrump + '&currentColor=' + thisGame.colorPlayed() + '&cards=' + thisGame.playableCards());
-						io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('announce', {gameID:msg.gameID, lastAnnounce:0, msg:'all passed'});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
-
+						// setTimeout(function(){
+							io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('announce', {gameID:msg.gameID, lastAnnounce:0, msg:'all passed'});	
+						// }, 2*TIMEUNIT);
 					});
 				} else {
   					console.log('finalAnnounce lets play');
@@ -315,7 +320,7 @@ io.on('connection', function(socket){
 						io.to(users[pName].socket).emit('distribution', {message:'', cards: thisGame.players[pName].cards});
 					}
 				io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('announce', {gameID:msg.gameID, lastAnnounce:(thisGame.currentAnnounce.value), msg:'next announce'});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
-					
+
 				},1*TIMEUNIT);
 				
 			} else if (endTrick){

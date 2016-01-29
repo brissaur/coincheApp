@@ -18,6 +18,7 @@ function Deck(){
 		console.log( this.cards.slice(0,8));
 	};
 	this.distribute=function(){
+		this.shuffle();
 		return [cardSort(this.cards.slice(0,8)),cardSort(this.cards.slice(8,16)),cardSort(this.cards.slice(16,24)),cardSort(this.cards.slice(24,32))];
 		// return [this.cards.slice(0,8).sort(),this.cards.slice(8,16).sort(),this.cards.slice(16,24).sort(),this.cards.slice(24,32).sort()];
 		//use splice()

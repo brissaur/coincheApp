@@ -108,6 +108,7 @@ socket.on('announce', function(msg){
 
 socket.on('announced', function(msg){
   $('#messages').append($('<li>').text(msg.name + ' announced ' + msg.value + msg.color));
+
 });
 
 // <<<<<<<<<<<< Manage game initialization >>>>>>>>>>>>>>
@@ -125,18 +126,19 @@ socket.on('initialize_game', function(msg){//cards, players, dealer
 });
 socket.on('distribution', function(msg){//cards, players, dealer
   distribute(msg.cards);
+  console.log('distribution: ' + msg.cards);
   // display COINCHER area
 });
 socket.on('chosen_trumps', function(msg){//value, color
   // undisplay COINCHER area or chosetrumps area
-  if (msg.value != 0){
-    $('#messages').append($('<li>').text(' Chosen trumps: ' + msg.color));
+  if (msg.value == 0){
+    $('#playerCards').children().each(function(index, element){
+        if($(this).is('img')){
+          $(this).remove();
+        }
+    });
   } else {
-    // var children = document.getElementById('bottomPlayer').childNodes;
-    var children = $('#bottomPlayer').children().remove();
-    // for (index in children){
-    //   if (index != 0) children[index].parentNode.removeChild(children[index]);
-    // }
+    $('#messages').append($('<li>').text(' Chosen trumps: ' + msg.color));
   }
 });
 // <<<<<<<<<<<< Manage a player played >>>>>>>>>>>>>>
@@ -167,11 +169,5 @@ socket.on('end_trick', function(msg){
 socket.on('end_jetee', function(msg){
   $('#messages').append($('<li>').text(msg.message));
   distribute(cards);
-  // for(divs in places){
-  //   var child = document.getElementById(places[divs]).childNodes[1];
-  //   if (child){
-  //     child.parentNode.removeChild(child);
-  //   }
-    // document.getElementById(places[divs]).childNodes[0].src='';
 });
 

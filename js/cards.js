@@ -24,8 +24,13 @@ var timeToAnnounce = function(gameID, lastAnnonce){
   //display area and wait input
   //undisplay COINCHE AREA
   var res = prompt("last Announce = " + lastAnnonce + " --> you ??");
-  var value = res.substr(0, res.length -1);
-  var color = res.substr(-1);
+  if (res){
+    var value = res.substr(0, res.length -1);
+    var color = res.substr(-1);
+  } else {
+    var value = 0;
+    var color = '';
+  }
   socket.emit('announce', {value:value, color:color, gameID:gameID});
   //REDISPLAY COINCHE AREA
 }

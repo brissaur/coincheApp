@@ -148,9 +148,13 @@ function Game(id, players){
 
   		if (value == 0 && ((this.currentPlayer+1)%this.nbPlayers)==this.firstTrickPlayer ){
   			var announce = {name: this.playersIndexes[this.firstTrickPlayer], value:this.currentAnnounce.value, color:this.currentAnnounce.color}
+  			if (announce.value == 0){//redistribution
+  				this.currentDealer = (this.currentDealer+1)%this.nbPlayers;
+  			} else {
+	  			this.currentTrump = this.currentAnnounce.color;
+  			}
   			this.firstTrickPlayer = (this.currentDealer+1)%this.nbPlayers;
   			this.currentPlayer = this.firstTrickPlayer;
-  			this.currentTrump = this.currentAnnounce.color;
 			return callback (null, announce);
   		}
   		if (value != 0){
