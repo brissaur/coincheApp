@@ -311,11 +311,12 @@ io.on('connection', function(socket){
 					io.emit('end_trick', {message:'trick well ended'});
 					for (pIndex in thisGame.playersIndexes){
 						var pName = thisGame.playersIndexes[pIndex];
-						io.to(users[pName].socket).emit('end_jetee', 
-							{message:'jetee well ended', cards: thisGame.players[pName].cards});
+						io.to(users[pName].socket).emit('end_jetee', {message:'jetee well ended'});
+						io.to(users[pName].socket).emit('distribution', {message:'', cards: thisGame.players[pName].cards});
 					}
-					io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('play', {message:'',gameID:msg.gameID,cards: thisGame.playableCards()});	
-				},2*TIMEUNIT);
+				io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('announce', {gameID:msg.gameID, lastAnnounce:(thisGame.currentAnnounce.value), msg:'next announce'});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
+					
+				},1*TIMEUNIT);
 				
 			} else if (endTrick){
 				setTimeout(function(){
