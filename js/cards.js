@@ -18,7 +18,16 @@ var distribute = function(cards){
     shiftLeft+=30;
     playerCards.append(c);
   }
-  //TODO: print 8 cards for other player
+}
+
+var timeToAnnounce = function(gameID, lastAnnonce){
+  //display area and wait input
+  //undisplay COINCHE AREA
+  var res = prompt("last Announce = " + lastAnnonce + " --> you ??");
+  var value = res.substr(0, res.length -1);
+  var color = res.substr(-1);
+  socket.emit('announce', {value:value, color:color, gameID:gameID});
+  //REDISPLAY COINCHE AREA
 }
 
 var timeToPlay = function(gameID, cards){

@@ -100,24 +100,44 @@ socket.on('disconnection', function(msg){
 socket.on('play', function(msg){
       timeToPlay(msg.gameID, msg.cards);
 });
+
+socket.on('announce', function(msg){
+      timeToAnnounce(msg.gameID, msg.lastAnnounce);
+      console.log(msg.msg);
+});
+
+socket.on('announced', function(msg){
+  $('#messages').append($('<li>').text(msg.name + ' announced ' + msg.value + msg.color));
+});
+
 // <<<<<<<<<<<< Manage game initialization >>>>>>>>>>>>>>
 socket.on('initialize_game', function(msg){//cards, players, dealer
   // var dealer = msg.dealer;//TODO button
   // debugger;
-  console.log(msg);
-  console.log({pseudo: pseudo});
   var myIndex = msg.players.indexOf(pseudo);
-  cards = msg.cards;
   // $('#messages').append($('<li>').text('Starting Game...' + cards));
   for (var i = 0; i <msg.players.length; i++) {
     var playername = msg.players[(i+myIndex)%msg.players.length];
-    console.log(playername);
-    console.log({i: i, myIndex: myIndex, nbPlayers:msg.players.length});
     places[playername]=positions[i];
     // console.log('places['+playername+']='+places[playername]);
     document.getElementById(positions[i]).childNodes[0].innerHTML=playername;
   };
-  distribute(cards);
+});
+socket.on('distribution', function(msg){//cards, players, dealer
+  distribute(msg.cards);
+  // display COINCHER area
+});
+socket.on('chosen_trumps', function(msg){//value, color
+  // undisplay COINCHER area or chosetrumps area
+  if (msg.value != 0){
+    $('#messages').append($('<li>').text(' Chosen trumps: ' + msg.color));
+  } else {
+    // var children = document.getElementById('bottomPlayer').childNodes;
+    var children = $('#bottomPlayer').children().remove();
+    // for (index in children){
+    //   if (index != 0) children[index].parentNode.removeChild(children[index]);
+    // }
+  }
 });
 // <<<<<<<<<<<< Manage a player played >>>>>>>>>>>>>>
 socket.on('played', function(msg){

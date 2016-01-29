@@ -120,9 +120,6 @@ app.get('/connectedUsers',auth.checkAuthorized, function (req, res){//TODO !!!!!
 			usersToSend.push(users[index].name);//TODO: tester pk KO
 		}
 	}
-	// usersToSend.sort();
-    // console.dir(usersToSend);
-    console.log(req.session.user.name + '-->' + usersToSend);
   	res.send(usersToSend);
 });
 // ==============================================================
@@ -169,7 +166,32 @@ io.on('connection', function(socket){
 	    console.log('Game invitation from '+ name + ' for '+ msg.players);
 	    
 	    var gameID = Games.invite(msg.players);
-	    Games.accept(gameID,name);
+	    //////////////////A VIRER TEST
+	    msg.players.forEach(function(pName){
+	    	Games.accept(gameID,pName);
+	    });
+	    if (Games.readyToStart(gameID)){
+			console.log('Game ready to start');
+			Games.init(gameID, function(game){
+				for (pIndex in game.playersIndexes){
+					var pName = game.playersIndexes[pIndex];
+					io.to(users[pName].socket).emit('initialize_game', 
+						{msg:'', players: game.playersIndexes, dealer: game.currentDealer});
+				}
+				game.nextJetee(function(){
+					for (pIndex in game.playersIndexes){
+						var pName = game.playersIndexes[pIndex];
+						io.to(users[pName].socket).emit('distribution', 
+							{msg:'', cards: game.players[pName].cards});
+					}
+					// console.log('playable cards: ' + 'trump=' + game.currentTrump + '&currentColor=' + game.colorPlayed() + '&cards=' + game.playableCards());
+					io.to(users[game.playersIndexes[game.currentPlayer]].socket).emit('announce', {gameID:gameID, lastAnnounce:0, msg:'readyToStart'});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
+
+				});
+			});
+		}
+	    //////////////////A VIRER 
+
 	    //TODO: set Timeout si client rep pas
     	msg.players.forEach(function(pName){
 			assert(users[pName]);
@@ -177,7 +199,8 @@ io.on('connection', function(socket){
 		});
 		//sender auto accepts
 	    // rooms[gameID] = {players: gamePlayers,  currentPlayer:null, currentDealer:null, firstTrickPlayer:null, deck:null}//comment on check ils acceptent
-	    socket.broadcast.emit('game_invitation', {name: name, message: '', gameID: gameID});//TODO EVOL roadcast+print local
+	    //TODO: decommenter underneath
+	    // socket.broadcast.emit('game_invitation', {name: name, message: '', gameID: gameID});//TODO EVOL roadcast+print local
   	});
 	socket.on('game_invitation_accepted', function(msg){//msg-> gameID
 		var name = socket.handshake.session.user.name;
@@ -190,16 +213,19 @@ io.on('connection', function(socket){
 		if (Games.readyToStart(msg.gameID)){
 			console.log('Game ready to start');
 			Games.init(msg.gameID, function(game){
-				thisGame = game;
-				thisGame.start(function(){
-					for (pIndex in thisGame.playersIndexes){
-						var pName = thisGame.playersIndexes[pIndex];
-						console.log(thisGame.players[pName]);
-						io.to(users[pName].socket).emit('initialize_game', 
-							{msg:'', players: thisGame.playersIndexes, dealer: thisGame.currentDealer, cards: thisGame.players[pName].cards});
+				for (pIndex in game.playersIndexes){
+					var pName = game.playersIndexes[pIndex];
+					io.to(users[pName].socket).emit('initialize_game', 
+						{msg:'', players: game.playersIndexes, dealer: game.currentDealer});
+				}
+				game.nextJetee(function(){
+					for (pIndex in game.playersIndexes){
+						var pName = game.playersIndexes[pIndex];
+						io.to(users[pName].socket).emit('distribution', 
+							{msg:'', cards: game.players[pName].cards});
 					}
-					// console.log('playable cards: ' + 'trump=' + thisGame.currentTrump + '&currentColor=' + thisGame.colorPlayed() + '&cards=' + thisGame.playableCards());
-					io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('play', {gameID:msg.gameID, cards:thisGame.playableCards(), msg:''});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
+					// console.log('playable cards: ' + 'trump=' + game.currentTrump + '&currentColor=' + game.colorPlayed() + '&cards=' + game.playableCards());
+					io.to(users[game.playersIndexes[game.currentPlayer]].socket).emit('announce', {gameID:msg.gameID, lastAnnounce:0, msg:'real Start'});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
 
 				});
 			});
@@ -219,6 +245,46 @@ io.on('connection', function(socket){
 	    Games.refuse(msg.gameID, name);
 	    
   	});
+	// <<<<<<<<<<<< Manage a player annonce >>>>>>>>>>>>>>
+  	socket.on('announce', function(msg){//.card + .player + .firstPlayer
+		var name = socket.handshake.session.user.name;
+  		console.log({type: 'announce', value:msg.value, color: msg.color, name: name});
+  		assert(users[name]);
+  		var thisGame = Games.game(msg.gameID);
+  		thisGame.announce(name, msg.value,msg.color, function(err, finalAnnounce){
+  			console.log({type:'game.js did announce', name:name, value:msg.value,color:msg.color, finalAnnounce:finalAnnounce});
+  			if (err) return 0;
+  			socket.broadcast.emit('announced', {gameID:msg.gameID, value:msg.value, color:msg.color, msg:'', name:name});
+  			if (finalAnnounce){//send all puis send ifrst
+				for (pIndex in thisGame.playersIndexes){
+					var pName = thisGame.playersIndexes[pIndex];
+					io.to(users[pName].socket).emit('chosen_trumps', 
+						{msg:'', color: finalAnnounce.color, value: finalAnnounce.value});
+				}
+				if (finalAnnounce.value == 0){//TODO: next game
+					console.log('all passed');
+					thisGame.nextJetee(function(){
+						for (pIndex in thisGame.playersIndexes){
+							io.to(users[pName].socket).emit('distribution', 
+								{msg:'', cards: thisGame.players[pName].cards});
+						}
+						// console.log('playable cards: ' + 'trump=' + thisGame.currentTrump + '&currentColor=' + thisGame.colorPlayed() + '&cards=' + thisGame.playableCards());
+						io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('announce', {gameID:msg.gameID, lastAnnounce:0, msg:'all passed'});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
+
+					});
+				} else {
+  					console.log('finalAnnounce lets play');
+					io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('play', {message:'',gameID:msg.gameID, cards: thisGame.playableCards()});	
+				}
+			} else {
+				console.log('next annonce');
+				io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('announce', {gameID:msg.gameID, lastAnnounce:(thisGame.currentAnnounce.value), msg:'next announce'});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
+			}
+			
+
+  		});
+  	});
+  	
 	// <<<<<<<<<<<< Manage a player plays >>>>>>>>>>>>>>
   	socket.on('play', function(msg){//.card + .player + .firstPlayer
 		var name = socket.handshake.session.user.name;

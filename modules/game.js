@@ -113,10 +113,12 @@ function Game(id, players){
 	this.currentTrick=[];
 	this.lastTrick=[];
 	this.currentTrump = '';
+	this.currentAnnounce = {color:'', value:0};
 
-	this.start = function(callback){//callback()
+	this.nextJetee = function(callback){//callback()
 		this.distribute();
-		this.currentTrump = 'S';//TODO
+		this.currentTrump = '';//TODO
+		this.currentAnnounce = {color:'', value:0};
 		console.log({dealer: this.currentDealer, firstPlayer: this.firstTrickPlayer})
 		callback();
 	}
@@ -138,6 +140,35 @@ function Game(id, players){
 // ================== GAME RULES ===================================
 // ==============================================================
 //When a player plays a card
+	this.announce = function(name, value, color, callback){
+  		assert(this.playersIndexes.indexOf(name)!=-1);
+  		assert(this.playersIndexes.indexOf(name)===this.currentPlayer);
+
+  		assert((parseInt(value) > parseInt(this.currentAnnounce.value)) || value == 0, 'new announce not greater or pass ' + value + ' !> ' + this.currentAnnounce.value);
+
+  		if (value == 0 && ((this.currentPlayer+1)%this.nbPlayers)==this.firstTrickPlayer ){
+  			var announce = {name: this.playersIndexes[this.firstTrickPlayer], value:this.currentAnnounce.value, color:this.currentAnnounce.color}
+  			this.firstTrickPlayer = (this.currentDealer+1)%this.nbPlayers;
+  			this.currentPlayer = this.firstTrickPlayer;
+  			this.currentTrump = this.currentAnnounce.color;
+			return callback (null, announce);
+  		}
+  		if (value != 0){
+  			this.firstTrickPlayer=this.currentPlayer;
+  			this.currentAnnounce.value = value;
+  			this.currentAnnounce.color = color;
+  		}
+
+  		this.currentPlayer=(this.currentPlayer+1)%this.nbPlayers;
+  		return callback(null, null);
+
+  		// if (this.currentPlayer=this.firstTrickPlayer){//fin des annonces
+  		// }
+	}
+	this.coinche = function (){
+
+	}
+
 	this.play = function(name, card, callback){//callback(endTrick)
   		assert(this.playersIndexes.indexOf(name)!=-1);
   		assert(this.playersIndexes.indexOf(name)===this.currentPlayer);
@@ -183,6 +214,7 @@ function Game(id, players){
 		if (endMatch){
 			this.endMatch(callback);
 		} else {
+
 		}
 		this.currentDealer = (this.currentDealer + 1)%this.nbPlayers;
 		this.firstTrickPlayer = (this.currentDealer + 1)%this.nbPlayers;
@@ -190,8 +222,11 @@ function Game(id, players){
 		this.distribute();
 		this.lastTrick = [];
 		this.currentTrickIndex = 0;
+		this.currentTrump = '';
+		this.currentAnnounce = {color:'', value:0};
 		console.log({dealer: this.currentDealer, firstPlayer: this.firstTrickPlayer})
 		callback(true, true, false);
+
 	}
 	this.endMatch = function(callback){
 		//compter les points
