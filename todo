@@ -2,34 +2,28 @@ pb du register
 
 jeu de carte en non absolu
 
-ajouter annonce
+notion d'equipe
+refactoriser code
+découpage partie logique/partie communication???
+
 ajouter comptage de points
 ajouter affichage des points
 
 le scroll message
 selection des gens connecter pour invitation
 
-logger les cartes dans OBJET GAME
-finir le set de 8 cartes
-..;
-
-pb des cartes deja joué
-	condition pur rajouter le listener ? curren t= src!='' mais non accessible en jquery
-	chat.js:112
-
 
 peggie
 cedric guilherm
-
+meuf du CE
+herve
+carrier
+chloe lettre motiv
 _______________
-liste des joueurs connectés sur la gauche
-invite game
-accept game
-start GAME
-//
+REFACTORISATION:
 
-
-
+découper le jeu
+server.hs : que les routes
 _____________________________________________________
 1/Chat
 2/file de message chacun son tour
