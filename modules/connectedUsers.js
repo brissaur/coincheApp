@@ -1,6 +1,6 @@
-var users = {};
+// var users;
 
-exports.users=users;
+// exports.users=users;
 // exports.add = function(userID, user){
 // 	assert(!users[userID]);
 // 	users[userID] = user;

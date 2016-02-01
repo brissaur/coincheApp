@@ -19,50 +19,50 @@ module.exports = function(launcherIo){
 	io = launcherIo;
 	return _res;
 }
-_res.test = function(){
-	console.log('test');
-	console.log(users);
-}
+// _res.test = function(){
+// 	console.log('test');
+// 	console.log(users);
+// }
 
 // ==============================================================
 // ================== INVITATIONS ===================================
 // ==============================================================
 _res.invite = invite;
-function invite(players){
-	var inviteID = getNewAvailableGameId();
+function invite(name, players){
+	var inviteID = getNewAvailableGameId();//TODO: pb unicité
 	console.log('invite ' + inviteID + ' for '+ players);
 	//TODO: set Timeout!!!!!
 	// assert(!invites[inviteID]);
 	invites[inviteID] = [];
-	players.forEach(function(player){
-			// console.log(player);
-		invites[inviteID][player] = false;
-	});
-
+	invites[inviteID][name] = true;
+	users[name].game = {gameID:inviteID};
 	players.forEach(function(pName){
 		assert(users[pName]);
+		invites[inviteID][pName] = false;
     	users[pName].game = {gameID:inviteID};//, accepted:false}; ---> ca veut dire quil es toccupé par une game quil ait accepte ou pas
+						//TODO: decommenter underneath
+						// io.emit('game_invitation', {name: name, message: '', gameID: gameID});//TODO EVOL roadcast+print local
+						// socket.broadcast.emit('game_invitation', {name: name, message: '', gameID: gameID});//TODO EVOL roadcast+print local
+						io.to(users[pName].socket).emit('game_invitation', {msg:'', name: name, gameID: inviteID});
 	});
 						    //////////////////A VIRER TEST
-						    players.forEach(function(pName){
-						    	accept(inviteID,pName);
-						    });
+						 //    players.forEach(function(pName){
+						 //    	accept(inviteID,pName);
+						 //    });
 
-							if (readyToStart(inviteID)){
-								console.log('Game ready to start');
-								init(inviteID, function(game){
-									for (pIndex in game.playersIndexes){
-										var pName = game.playersIndexes[pIndex];
-										io.to(users[pName].socket).emit('initialize_game', 
-											{msg:'', players: game.playersIndexes, dealer: game.currentDealer});
-									}
-									game.nextJetee();
-								});
-							}
+							// if (readyToStart(inviteID)){
+							// 	console.log('Game ready to start');
+							// 	init(inviteID, function(game){
+							// 		for (pIndex in game.playersIndexes){
+							// 			var pName = game.playersIndexes[pIndex];
+							// 			io.to(users[pName].socket).emit('initialize_game', 
+							// 				{msg:'', players: game.playersIndexes, dealer: game.currentDealer});
+							// 		}
+							// 		game.nextJetee();
+							// 	});
+							// }
 	//TODO: set Timeout si client rep pas
 
-	//TODO: decommenter underneath
-	// socket.broadcast.emit('game_invitation', {name: name, message: '', gameID: gameID});//TODO EVOL roadcast+print local
 	console.log(invites);
 
 }
@@ -91,15 +91,16 @@ _res.refuse = refuse;
 function refuse(inviteID, player){
 	assert(invites[inviteID]);
 	assert(invites[inviteID][player]!=null);
-	delete invites[inviteID];
 
-    game(inviteID).playersIndexes().forEach(function(pName){
+    invites[inviteID].forEach(function(pName){
     	assert(users[pName]);
     	assert(users[pName].game);
+    	assert(users[pName].game.gameID == inviteID);
     	users[pName].game=null;
     })
+	delete invites[inviteID];
 
-    io.emit('game_invitation_cancelled', {message:'', gameID: inviteID, name:name});
+    io.emit('game_invitation_cancelled', {message:'', gameID: inviteID, name:player});
 
 
 	// est ce quon renvoit les players?

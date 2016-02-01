@@ -1,6 +1,8 @@
 // ==============================================================
 // ================== GLOBAL VARS ===============================
 // ==============================================================
+ // $('<input />', ).appendTo(container);
+
 var socket = io();
 var dealer;
 // var players = [];
@@ -27,7 +29,10 @@ var shiftLeft=0;
 
 $.get('/connectedUsers',function(data){
     data.forEach(function(user){
-      $('#userList').append($('<li>').text(user));
+      $('#userList').append($('<li>').text(user).append($('<input />', { type: 'checkbox', value: user})));
+      //.attr('checked', false);//TODO
+ // $('#userList').append($('<input />', { type: 'checkbox', value: 'robiiin' , text: 'test'}).text('aefz'));
+
     })
 });
 
@@ -39,8 +44,12 @@ $('form').submit(function(){
 });
 function invitePlayers(){
   //select players
-  // console.log(confirm('machin' + 'invited you for a game. Do you want to join?'));
-  socket.emit('game_invitation', {players: ['a','b','c','d']});
+  var players = [];
+  $(':checkbox:checked').each(function(index, element){//TODO pb si aucun enfant;
+    players.push($(this).val());
+  });
+  $(':checkbox:checked').attr('checked', false);
+  if(players.length>0) socket.emit('game_invitation', {players: players});
 }
 
 // <<<<<<<<<<<< Receive game invitation >>>>>>>>>>>>>>
@@ -70,7 +79,9 @@ socket.on('chat_message', function(msg){
 // <<<<<<<<<<<< Manage new connection >>>>>>>>>>>>>>
 socket.on('connection', function(msg){
   $('#messages').append($('<li>').text(msg.name + ' is connected.'));
-  $('#userList').append($('<li>').text(msg.name));
+  $('#userList').append($('<li>').text(msg.name).append($('<input />', { type: 'checkbox', value: msg.name})));
+
+  // $('#userList').append($('<li>').text(msg.name));
   //TODO sort
 });
 socket.on('connection_accepted', function(msg){

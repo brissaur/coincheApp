@@ -20,7 +20,6 @@ module.exports = function(io){
 			var name=socket.handshake.session.user.name;
 			console.log(name + ' connected with socket ' + socket.id);
 			users[name] = {socket: socket.id, name: name, game:null};
-			Games.test();
 			socket.emit('connection_accepted', {message:'Connection accepted', name: name});//when connection refused? how?
 			socket.broadcast.emit('connection', {name: name});
 		//TEST
@@ -50,11 +49,12 @@ module.exports = function(io){
 		// <<<<<<<<<<<< Manage game invitation >>>>>>>>>>>>>>
 		socket.on('game_invitation', function(msg){
 			//TODO: verifier que users.game = null (= quil peut etre invité)
+			//todo check input user
 			var name = socket.handshake.session.user.name;
 			//créer un namespace ET SEN RAPELLER -> dans Games[]
 		    console.log('Game invitation from '+ name + ' for '+ msg.players);
 		    
-		   	Games.invite(msg.players);
+		   	Games.invite(name,msg.players);
 	  	});
 		socket.on('game_invitation_accepted', function(msg){//msg-> gameID
 			var name = socket.handshake.session.user.name;
@@ -67,7 +67,7 @@ module.exports = function(io){
 	  	});
 		socket.on('game_invitation_refused', function(msg){
 			var name = socket.handshake.session.user.name;
-		    console.log('Game invitation refused by '+ name);
+		    console.log('Game invitation '+msg.gameID+' refused by '+ name );
 		    
 		    Games.refuse(msg.gameID, name);
 	  	});

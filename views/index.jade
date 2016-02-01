@@ -18,13 +18,19 @@ block content
 						.col-xs-2.col-xs-offset-5.player#bottomPlayer
 								span.playerName
 				.row
+					.col-xs-12.hidden#announceBoard
 					.col-xs-12
 						div#playerCards
 			.col-xs-2#usersArea
 				label Coupaings
 					a(href='/logout',style="display:block;") Disconnect #{session.user.name}
+				//- form(action='/testa', method='post')
 				ul#userList
 				button(onclick='invitePlayers();', style='margin-bottom:100px') Invite
+					//- button(type='submit') Invite
+					//- button(onclick='invitePlayers();', style='margin-bottom:100px') Invite
+					
+				//- ul
 		.row
 			.col-xs-12#chatWindow
 				//- label Messages

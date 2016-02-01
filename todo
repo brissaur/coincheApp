@@ -1,34 +1,25 @@
-pb du register
-
-jeu de carte en non absolu
-
-notion d'equipe
-refactoriser code
-découpage partie logique/partie communication???
-
-ajouter comptage de points
-ajouter affichage des points
-
-le scroll message
-selection des gens connecter pour invitation
-
-
 peggie
 cedric guilherm
 meuf du CE
 herve
 carrier
 chloe lettre motiv
-_______________
-REFACTORISATION:
-
-découper le jeu
-server.hs : que les routes
+_____________________________________________________
 _____________________________________________________
 BUGGS
-_____________________________________________________
 announce before card are distributed
+jeu de carte en non absolu
+pb du register
 
+
+FONTIONALITIES
+clik to announce
+le scroll message
+check box invite 3 personnes
+notion d'equipe
+ajouter comptage de points
+ajouter affichage des points
+client : trier alphabetique nom users
 _____________________________________________________
 _____________________________________________________
 1/Chat

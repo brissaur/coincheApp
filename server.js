@@ -104,6 +104,7 @@ app.get('/logout', function (req, res){
 app.get('/connectedUsers',auth.checkAuthorized, function (req, res){//TODO !!!!!!!!
 	var usersToSend = [];
 	var users = launcher.getConnectedUsers();
+	console.log(users);
 	for (index in users){
 		if(users[index].name!=req.session.user.name){
 			usersToSend.push(users[index].name);//TODO: tester pk KO
