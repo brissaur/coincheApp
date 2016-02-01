@@ -155,7 +155,7 @@ function Game(id, players){
 	this.playersIndexes=players;//players[i]=pName;
 	this.players = {};
 	for(index in players){
-		this.players[players[index]]={};
+		this.players[players[index]]={team: index%2};
 	}
 	//TODO: add team numbers 0 / 1
 	this.nbPlayers=players.length;
@@ -163,18 +163,19 @@ function Game(id, players){
 	rand=Math.floor((Math.random() * this.nbPlayers));
 	
 	this.deck=Deck.newDeck();
+
 	this.namespace=null;
+	
+	this.currentTrickIndex = 0;
+	this.currentTrick=[];
+	
 	this.currentDealer=rand;
 	this.currentPlayer=(rand+1)%this.nbPlayers;
 	this.firstTrickPlayer=(rand+1)%this.nbPlayers;
-	this.deck=Deck.newDeck();
-	this.deck.shuffle();
-	this.scores = [{match:0, game:0},{match:0, game:0}];
-	this.currentTrickIndex = 0;
-	this.currentTrick=[];
-	this.lastTrick=[];
+	
+	this.scores = [{match:0, game:0, jetee:0},{match:0, game:0, jetee:0}];
 	this.currentTrump = '';
-	this.currentAnnounce = {color:'', value:0};
+	this.currentAnnounce = {color:'', value:0, team:-1};
 
 	this.nextJetee = function(callback){//callback()
 		this.distribute();
@@ -293,17 +294,19 @@ function Game(id, players){
 	this.endTrick = function(){
 		var endJetee = this.currentTrickIndex == 7;
 		io.emit('end_trick', {message:'trick well ended', trick: this.currentTrick});
-		
+		//count points
+		var winner = (this.trickWinner()+this.firstTrickPlayer)%this.nbPlayers;
+		this.scores[this.players[winner].team].jetee += trickValue(this.currentTrick, this.currentTrump);
+		this.scores[0].trick = 0;
+		this.scores[1].trick = 0;
 		if (endJetee) {
 			this.endJetee();
 		} else {
 			console.log('end trick');
 			// console.log((this.trickWinner()+this.firstTrickPlayer)%this.nbPlayers + '-' + this.trickWinner()+ '-'+this.firstTrickPlayer+ '-' +this.nbPlayers);
-			this.currentPlayer = (this.trickWinner()+this.firstTrickPlayer)%this.nbPlayers;
+			this.currentPlayer = winner;
 			console.log(this.playersIndexes[this.currentPlayer] +' won');
 			// console.log('THIS.FTPLAYER= ' + (this.trickWinner()+this.firstTrickPlayer)%this.nbPlayers);
-			this.lastTrick = this.currentTrick;
-			console.log(this.lastTrick);
 			this.currentTrickIndex++;
 			// this.currentPlayer = Math.floor((Math.random() * this.nbPlayers));//TODO EVOL: calculé quia  gagné le pli
 			this.firstTrickPlayer = this.currentPlayer;
@@ -314,8 +317,13 @@ function Game(id, players){
 	}
 
 	this.endJetee = function(){
-		var endMatch = (this.scores[0].match >=2000 || this.scores[1].match >=2000);
 		//compter les points
+		var winner = this.scores[this.currentAnnounce.team].jetee >= this.currentAnnounce.value?this.currentAnnounce.team:(this.currentAnnounce.team+1)%2; 
+		this.scores[this.players[winner].team].match = this.currentAnnounce.value;
+		var endMatch = (this.scores[0].match >=2000 || this.scores[1].match >=2000);
+		this.scores[0].jetee = 0;
+		this.scores[1].jetee = 0;
+		// this.scores = [{match:0, game:0, jetee:0},{match:0, game:0, jetee:0}];
 		if (endMatch){
 			this.endMatch();
 		} else {
@@ -325,7 +333,6 @@ function Game(id, players){
 		this.firstTrickPlayer = (this.currentDealer + 1)%this.nbPlayers;
 		this.currentPlayer = this.firstTrickPlayer;
 		this.distribute();
-		this.lastTrick = [];
 		this.currentTrickIndex = 0;
 		this.currentTrump = '';
 		this.currentAnnounce = {color:'', value:0};
@@ -340,11 +347,10 @@ function Game(id, players){
 		io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('announce', {gameID:this.gameID, lastAnnounce:(this.currentAnnounce.value), msg:'next announce'});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
 	}
 	this.endMatch = function(){
-		//compter les points
+		var winner = this.scores[0].match >=2000 ? 0:1;
+		this.scores[winner].match ++;
 		this.scores[0].match = 0;
-		this.scores[0].game++;
 		this.scores[1].match = 0;
-		this.scores[1].game++;
 	}
 
 	this.playableCards = function(){
@@ -462,4 +468,20 @@ function manageTrumps(playedCards, availableCards, trumpColor){
 	});
 	assert(upperTrumps || lowerTrumps);
 	return (upperTrumps.length>0?upperTrumps:lowerTrumps);
+}
+
+function trickValue(trick, trump, lastTrick){
+	var res = 0;
+	trick.forEach(function(card){
+		if (trump == 'AT' || trump == Cards[card].color){
+			res += Cards[card].allTrumpsPoints
+		} else if (trump == 'NT'){
+			res += Cards[card].noTrumpsPoints
+		} else {
+			res += Cards[card].points
+		}
+		if (lastTrick && (trump != 'NT')){
+			res += 10;
+		}
+	});
 }
