@@ -25,6 +25,12 @@ REFACTORISATION:
 découper le jeu
 server.hs : que les routes
 _____________________________________________________
+BUGGS
+_____________________________________________________
+announce before card are distributed
+
+_____________________________________________________
+_____________________________________________________
 1/Chat
 2/file de message chacun son tour
 3/telephone arabae

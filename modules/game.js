@@ -7,14 +7,27 @@ var Deck = require(__dirname +'/deck');
 var Cards = require(__dirname +'/cards').template();
 var games = {};
 var invites = {};
+var io;
+var users = require('./connectedUsers');
+var _res = {}//resulted element from require;
 
 var MAXPLAYER=2;
 var AUTHORIZEDCARDS=['7H','8H','9H','10H','JH','QH','KH','AH','7D','8D','9D','10D','JD','QD','KD','AD','7S','8S','9S','10S','JS','QS','KS','AS','7C','8C','9C','10C','JC','QC','KC','AC'];
 
+module.exports = function(launcherIo){
+	// console.log(launcherIo);
+	io = launcherIo;
+	return _res;
+}
+_res.test = function(){
+	console.log('test');
+	console.log(users);
+}
+
 // ==============================================================
 // ================== INVITATIONS ===================================
 // ==============================================================
-exports.invite = invite;
+_res.invite = invite;
 function invite(players){
 	var inviteID = getNewAvailableGameId();
 	console.log('invite ' + inviteID + ' for '+ players);
@@ -24,32 +37,79 @@ function invite(players){
 	players.forEach(function(player){
 			// console.log(player);
 		invites[inviteID][player] = false;
-	})
-	return inviteID;
+	});
+
+	players.forEach(function(pName){
+		assert(users[pName]);
+    	users[pName].game = {gameID:inviteID};//, accepted:false}; ---> ca veut dire quil es toccupé par une game quil ait accepte ou pas
+	});
+						    //////////////////A VIRER TEST
+						    players.forEach(function(pName){
+						    	accept(inviteID,pName);
+						    });
+
+							if (readyToStart(inviteID)){
+								console.log('Game ready to start');
+								init(inviteID, function(game){
+									for (pIndex in game.playersIndexes){
+										var pName = game.playersIndexes[pIndex];
+										io.to(users[pName].socket).emit('initialize_game', 
+											{msg:'', players: game.playersIndexes, dealer: game.currentDealer});
+									}
+									game.nextJetee();
+								});
+							}
+	//TODO: set Timeout si client rep pas
+
+	//TODO: decommenter underneath
+	// socket.broadcast.emit('game_invitation', {name: name, message: '', gameID: gameID});//TODO EVOL roadcast+print local
+	console.log(invites);
+
 }
-exports.accept = accept;
+_res.accept = accept;
 function accept(inviteID, player){
 	console.log('invite ' + inviteID + ' ACCEPTED by' +player);
+	console.log(player +' accepts '+ inviteID);
+	console.log(invites);
+	assert(inviteID);
 	assert(invites[inviteID]);
 		// console.log(invites[inviteID]);
 	assert(invites[inviteID][player]!=null);
 	invites[inviteID][player] = true;
+	if (readyToStart(inviteID)){
+				console.log('Game ready to start');
+				var game = init(inviteID);
+				for (pIndex in game.playersIndexes){
+					var pName = game.playersIndexes[pIndex];
+					io.to(users[pName].socket).emit('initialize_game', 
+						{msg:'', players: game.playersIndexes, dealer: game.currentDealer});
+				}
+				game.nextJetee();
+			}
 }
-exports.refuse = refuse;
+_res.refuse = refuse;
 function refuse(inviteID, player){
-	console.log('invite ' + inviteID + ' REFUSED by ' +player);
 	assert(invites[inviteID]);
 	assert(invites[inviteID][player]!=null);
 	delete invites[inviteID];
+
+    game(inviteID).playersIndexes().forEach(function(pName){
+    	assert(users[pName]);
+    	assert(users[pName].game);
+    	users[pName].game=null;
+    })
+
+    io.emit('game_invitation_cancelled', {message:'', gameID: inviteID, name:name});
+
+
 	// est ce quon renvoit les players?
 }
-exports.readyToStart = readyToStart;
+_res.readyToStart = readyToStart;
 function readyToStart(inviteID){
 	assert(invites[inviteID]);
 	var gameMustStart = true;
 	for (index in invites[inviteID]){
 		gameMustStart = gameMustStart && invites[inviteID][index];
-		
 	}
 	return gameMustStart;
 }
@@ -57,32 +117,32 @@ function readyToStart(inviteID){
 // ==============================================================
 // ================== GAME ADMIN===================================
 // ==============================================================
-exports.init = init;
-function init(gameID, callback){
+_res.init = init;
+function init(gameID){
 	assert(invites[gameID]);
 	assert(readyToStart(gameID));
 	var players = [];
 	for (player in invites[gameID]){
 		players.push(player);
 	}
-	callback(new Game(gameID, players));
+	return new Game(gameID, players);
 }
-// exports.init = init;
-// exports.newGame = newGame;
+// _res.init = init;
+// _res.newGame = newGame;
 // function newGame(players){
 // 	var g = new Game(players);
 // 	games[g.id] = g;
 // 	return g;
 // }
-exports.game = game;
+_res.game = game;
 function game(gameID){
 	return games[gameID];
 }
-// exports.getNewAvailableGameId = getNewAvailableGameId;
+// _res.getNewAvailableGameId = getNewAvailableGameId;
 function getNewAvailableGameId(){
 	return Math.floor((Math.random() * 1000));
 }
-// exports.getNewAvailableGameId = getNewAvailableGameId;
+// _res.getNewAvailableGameId = getNewAvailableGameId;
 function setNewAvailableGameId(gameID){
 	//
 }
@@ -120,7 +180,16 @@ function Game(id, players){
 		this.currentTrump = '';//TODO
 		this.currentAnnounce = {color:'', value:0};
 		console.log({dealer: this.currentDealer, firstPlayer: this.firstTrickPlayer})
-		callback();
+
+		for (pIndex in this.playersIndexes){
+			var pName = this.playersIndexes[pIndex];
+			io.to(users[pName].socket).emit('distribution', 
+				{msg:'', cards: this.players[pName].cards});
+		}
+
+		io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('announce', {gameID:this.gameID, lastAnnounce:0, msg:''});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
+		
+		if (callback) callback();
 	}
 
 	this.distribute = function(callback){
@@ -146,6 +215,9 @@ function Game(id, players){
 
   		assert((parseInt(value) > parseInt(this.currentAnnounce.value)) || value == 0, 'new announce not greater or pass ' + value + ' !> ' + this.currentAnnounce.value);
 
+		io.emit('announced', {gameID:this.gameID, value:value, color:color, msg:'', name:name});
+
+  		// END OF ANNOUNCE 
   		if (value == 0 && ((this.currentPlayer+1)%this.nbPlayers)==this.firstTrickPlayer ){
   			var announce = {name: this.playersIndexes[this.firstTrickPlayer], value:this.currentAnnounce.value, color:this.currentAnnounce.color}
   			if (announce.value == 0){//redistribution
@@ -155,20 +227,39 @@ function Game(id, players){
   			}
   			this.firstTrickPlayer = (this.currentDealer+1)%this.nbPlayers;
   			this.currentPlayer = this.firstTrickPlayer;
-			return callback (null, announce);
+			
+							for (pIndex in this.playersIndexes){
+								var pName = this.playersIndexes[pIndex];
+								io.to(users[pName].socket).emit('chosen_trumps', 
+									{msg:'', color: announce.color, value: announce.value});
+							}
+							if (announce.value == 0){//TODO: next game
+								console.log('all passed');
+								this.nextJetee();
+							} else {
+								console.log('finalAnnounce lets play');
+								io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('play', {message:'',gameID:this.gameID, cards: this.playableCards()});	
+							}
+			console.log(this);
+			return callback?callback():1;
   		}
+
+  		// NEW BET
   		if (value != 0){
   			this.firstTrickPlayer=this.currentPlayer;
   			this.currentAnnounce.value = value;
   			this.currentAnnounce.color = color;
   		}
 
+  		// PLAYE DID PASS BUT NOT EVERYONE TALKED
   		this.currentPlayer=(this.currentPlayer+1)%this.nbPlayers;
-  		return callback(null, null);
+		console.log('next annonce');
+		io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('announce', {gameID:this.gameID, lastAnnounce:(this.currentAnnounce.value), msg:'next announce'});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
 
-  		// if (this.currentPlayer=this.firstTrickPlayer){//fin des annonces
-  		// }
+		if (callback) callback();
+
 	}
+
 	this.coinche = function (){
 
 	}
@@ -179,6 +270,7 @@ function Game(id, players){
 
   		assert(AUTHORIZEDCARDS.indexOf(card)!=-1, 'AUTHORIZEDCARDS.indexOf(card): ' + AUTHORIZEDCARDS.indexOf(card) +' ' + card);
   		//remove played card from hand
+		io.emit('played', {name: name, card:card});//TODO: Gérer les erreurs
   		var cardIndex = this.players[name].cards.indexOf(card);
   		assert(cardIndex!=-1, 'User played '+card+' but available cards should be '+ this.players[name].cards);
   		this.players[name].cards.splice(cardIndex, 1);
@@ -188,35 +280,43 @@ function Game(id, players){
 		// var endTrick = this.firstTrickPlayer==((this.currentPlayer+1)%this.nbPlayers);
 		var endTrick = this.currentTrick.length == this.nbPlayers;
 		if (endTrick) {
-			this.endTrick(callback);
+			this.endTrick();
 		} else {
 			this.currentPlayer=(this.currentPlayer+1)%this.nbPlayers;
-  			callback(false, false, false);
+			io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('play', {message:'',gameID:this.gameID, cards: this.playableCards()});	
 		}
+		if (callback) callback();
 	}
 
-	this.endTrick = function(callback){
+
+	this.endTrick = function(){
 		var endJetee = this.currentTrickIndex == 7;
+		io.emit('end_trick', {message:'trick well ended', trick: this.currentTrick});
+		
 		if (endJetee) {
-			this.endJetee(callback);
+			this.endJetee();
 		} else {
+			console.log('end trick');
 			// console.log((this.trickWinner()+this.firstTrickPlayer)%this.nbPlayers + '-' + this.trickWinner()+ '-'+this.firstTrickPlayer+ '-' +this.nbPlayers);
 			this.currentPlayer = (this.trickWinner()+this.firstTrickPlayer)%this.nbPlayers;
+			console.log(this.playersIndexes[this.currentPlayer] +' won');
 			// console.log('THIS.FTPLAYER= ' + (this.trickWinner()+this.firstTrickPlayer)%this.nbPlayers);
 			this.lastTrick = this.currentTrick;
+			console.log(this.lastTrick);
 			this.currentTrickIndex++;
 			// this.currentPlayer = Math.floor((Math.random() * this.nbPlayers));//TODO EVOL: calculé quia  gagné le pli
 			this.firstTrickPlayer = this.currentPlayer;
-			callback(true, false, false);
 		}
 		this.currentTrick = [];
+		io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('play', {message:'',gameID:this.gameID, cards: this.playableCards()});	
+
 	}
 
-	this.endJetee = function(callback){
+	this.endJetee = function(){
 		var endMatch = (this.scores[0].match >=2000 || this.scores[1].match >=2000);
 		//compter les points
 		if (endMatch){
-			this.endMatch(callback);
+			this.endMatch();
 		} else {
 
 		}
@@ -229,16 +329,21 @@ function Game(id, players){
 		this.currentTrump = '';
 		this.currentAnnounce = {color:'', value:0};
 		console.log({dealer: this.currentDealer, firstPlayer: this.firstTrickPlayer})
-		callback(true, true, false);
 
+		console.log('endJetee');
+		for (pIndex in this.playersIndexes){
+				var pName = this.playersIndexes[pIndex];
+				io.to(users[pName].socket).emit('end_jetee', {message:'jetee well ended'});
+				io.to(users[pName].socket).emit('distribution', {message:'', cards: this.players[pName].cards});
+			}
+		io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('announce', {gameID:this.gameID, lastAnnounce:(this.currentAnnounce.value), msg:'next announce'});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
 	}
-	this.endMatch = function(callback){
+	this.endMatch = function(){
 		//compter les points
 		this.scores[0].match = 0;
 		this.scores[0].game++;
 		this.scores[1].match = 0;
 		this.scores[1].game++;
-		callback(true, true, true);
 	}
 
 	this.playableCards = function(){
@@ -280,7 +385,8 @@ function Game(id, players){
 	}
 
 	this.firstToPlay = function(){
-		return this.currentTrick.length == 0;
+  		// return this.playersIndexes.indexOf(name)==this.currentPlayer;
+  		return this.currentTrick.length == 0;
 	}
 
 	this.partnerIsWinning = function(){ //ROBINROBINROBIN

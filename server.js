@@ -78,22 +78,22 @@ app.get('/register', function (req, res){
   res.render('register');
 });
 app.post('/register', function (req, res){
-  console.log('Attempt register...');
-  user.create(req, res, function (err, msg, result){
-    if (err){
-      console.log('Register error='+ err.message);//todo- vrai error =
-      req.session.redirectmessage='ERROR: '+ err.message;
-      res.redirect('/register');
-    } else if (msg){
-      console.log('Register failed: '+ msg);//todo- vrai error =
-      req.session.redirectmessage='Signup failed: '+ msg;
-      res.redirect('/register');
-    } else {
-      console.log('Register: success');
-      console.log('Attempt login...');
-      auth.login(req, res);
-      });}
-
+  	console.log('Attempt register...');
+  	user.create(req, res, function (err, msg, result){
+	    if (err){
+	      console.log('Register error='+ err.message);//todo- vrai error =
+	      req.session.redirectmessage='ERROR: '+ err.message;
+	      res.redirect('/register');
+	    } else if (msg){
+	      console.log('Register failed: '+ msg);//todo- vrai error =
+	      req.session.redirectmessage='Signup failed: '+ msg;
+	      res.redirect('/register');
+	    } else {
+	      console.log('Register: success');
+	      console.log('Attempt login...');
+	      auth.login(req, res);
+	    }
+	});
 });
 app.get('/logout', function (req, res){
   req.session.user = null;
@@ -103,7 +103,8 @@ app.get('/logout', function (req, res){
 		//CONNECTED USER ROUTE
 app.get('/connectedUsers',auth.checkAuthorized, function (req, res){//TODO !!!!!!!!
 	var usersToSend = [];
-	for (index in launcher.getConnectedUsers()){
+	var users = launcher.getConnectedUsers();
+	for (index in users){
 		if(users[index].name!=req.session.user.name){
 			usersToSend.push(users[index].name);//TODO: tester pk KO
 		}
