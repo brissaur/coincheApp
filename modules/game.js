@@ -343,7 +343,10 @@ function Game(id, players){
 		console.log(this.scores);
 		for (pIndex in this.playersIndexes){
 			var pName = this.playersIndexes[pIndex];
-			io.to(users[pName].socket).emit('end_jetee', {message:'jetee well ended', scores:this.scores});
+			var scoresToSend = [];
+			scoresToSend.push(this.scores[this.players[pName].team]);
+			scoresToSend.push(this.scores[(this.players[pName].team+1)%2]);
+			io.to(users[pName].socket).emit('end_jetee', {message:'jetee well ended', scores:scoresToSend});
 		}	
 		this.scores[0].jetee = 0;
 		this.scores[1].jetee = 0;
