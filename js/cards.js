@@ -1,5 +1,5 @@
 var testcards = ['9H','8S','JC','10H','JH','QH','KH','AH'];
-
+var gameID = -1;
 var distribute = function(cards){
   // assert(cards.length==8);
   var zindex=10;
@@ -20,20 +20,56 @@ var distribute = function(cards){
   }
 }
 
-var timeToAnnounce = function(gameID, lastAnnonce){
+var timeToAnnounce = function(id, lastAnnonce){
   //display area and wait input
+  gameID = id;
   //undisplay COINCHE AREA
-  var res = prompt("last Announce = " + lastAnnonce + " --> you ??");
-  if (res){
-    var value = res.substr(0, res.length -1);
-    var color = res.substr(-1);
-  } else {
-    var value = 0;
-    var color = '';
-  }
-  socket.emit('announce', {value:value, color:color, gameID:gameID});
+  $('#announceBoard').removeClass('hidden');
+  // $('.announceValue').removeClass('hidden');
+  // $('.announceValue').each(function(index, element){
+  //   if (parseInt($(this).attr('value')) <= lastAnnonce){
+  //     $(this).addClass('hidden');
+  //   }
+  // })
+  // var res = prompt("last Announce = " + lastAnnonce + " --> you ??");
+  // if (res){
+  //   var value = res.substr(0, res.length -1);
+  //   var color = res.substr(-1);
+  // } else {
+  //   var value = 0;
+  //   var color = '';
+  // }
+  // socket.emit('announce', {value:value, color:color, gameID:gameID});
   //REDISPLAY COINCHE AREA
 }
+        function manageAnnounceButton(elem){
+          $('.'+$(elem).attr('class')).removeClass('selected');
+          $(elem).addClass('selected');
+        }
+
+        function sendAnnounce(elem){
+          var announceType = $(elem).attr('value');
+          if (announceType == 'Announce'){
+            var value =  $('.announceValue.selected').attr('value');
+            var color =  $('.announceColor.selected').attr('value');
+            if (value && color){
+              socket.emit('announce', {value:value, color:color, gameID:gameID});
+              $('#announceBoard').addClass('hidden');
+              gameID = -1;
+            }
+          } else if (announceType == 'Pass'){
+              socket.emit('announce', {value:0, color:'', gameID:gameID});
+              $('#announceBoard').addClass('hidden');
+              gameID = -1;
+          } else if (announceType == 'Coinche'){
+              socket.emit('coinche', {gameID:gameID});
+              $('#announceBoard').addClass('hidden');
+              gameID = -1;
+          } else {
+            
+          }
+
+        }
 
 var timeToPlay = function(gameID, cards){
   // $('#messages').append($('<li>').text('I can play...' + cards));

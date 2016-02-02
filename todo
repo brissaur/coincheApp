@@ -1,3 +1,5 @@
+--> affichage choix annonces
+
 peggie
 cedric guilherm
 meuf du CE
@@ -10,7 +12,8 @@ BUGGS
 announce before card are distributed
 jeu de carte en non absolu
 pb du register
-
+double connection 'a ' at the same time;
+Q -> 10 -> 2 -> 9 turmps, remain J for winner NO PLAYABLE CARDS;
 
 FONTIONALITIES
 notion d'equipe

@@ -10,7 +10,7 @@ var positions = ['bottomPlayer', 'leftPlayer', 'topPlayer', 'rightPlayer'];
 var places = {};
 var cards = [];
 var pseudo = '';
-
+var gameID = -1;
 // <<<<<<<<<<<< Mise en forme du jeu du joueur >>>>>>>>>>>>>>
 var zindex=10;
 var shiftLeft=0;
@@ -54,12 +54,27 @@ function invitePlayers(){
 
 // <<<<<<<<<<<< Receive game invitation >>>>>>>>>>>>>>
 socket.on('game_invitation', function(msg){//gameID, name, 
+  gameID=msg.gameID;
+  $('#inviteBoard').removeClass('hidden');
+  $('#inviteBoard p').text(msg.name + ' invited you for a game.');
   $('#messages').append($('<li>').text(msg.name + ' invited you for game ' + msg.gameID));//TODO EVOL scroll down auto
-  socket.emit('game_invitation_' + (confirm(msg.name + ' invited you for a game. Do you want to join?')?'accepted':'refused'),{gameID: msg.gameID, msg:''});
 });
-socket.on('game_invitation_cancelled', function(msg){//gameID, name, 
+socket.on('game_invitation_cancelled', function(msg){
+  $('#inviteBoard').addClass('hidden');
+  gameID=-1;
   $('#messages').append($('<li>').text('Game was cancelled by ' + msg.name));//TODO EVOL scroll down auto
 });
+
+    function acceptInvite(){
+      socket.emit('game_invitation_accepted',{gameID: gameID, msg:''});
+      gameID = -1;
+      $('#inviteBoard').addClass('hidden');
+    }
+    function refuseInvite(){
+      socket.emit('game_invitation_refused',{gameID: gameID, msg:''});
+      gameID = -1;
+      $('#inviteBoard').addClass('hidden');
+    }
 // <<<<<<<<<<<< Receive chat message >>>>>>>>>>>>>>
 socket.on('chat_message', function(msg){
   $('#messages').append($('<li>').text(msg.name + ': ' +msg.message));//TODO EVOL scroll down auto
@@ -95,13 +110,7 @@ socket.on('connection_refused', function(msg){
 socket.on('disconnection', function(msg){
   $('#messages').append($('<li>').text(msg.name + ' disconnected.'));
   $('#userList').children().each(function(index, element){//TODO pb si aucun enfant;
-      // console.log(this.text);
-      // console.log(index);
-      // console.log(element);
-      // console.log($(this).text());
-      // console.log(element.text());
       if($(this).text()==msg.name){
-        // $(this).parents().removeChild($(this));
         $(this).remove();
       }
     });
@@ -113,8 +122,9 @@ socket.on('play', function(msg){
 });
 
 socket.on('announce', function(msg){
+      // alert('announce');
       timeToAnnounce(msg.gameID, msg.lastAnnounce);
-      console.log(msg.msg);
+      console.log('announce : ' + msg.msg);
 });
 
 socket.on('announced', function(msg){

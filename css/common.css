@@ -74,7 +74,7 @@ form/* {
 .cardToBePlayed{
       width:60px;
       height:77px;
-      position: fixed;
+      position: absolute;
 }
 #playerCards{
       text-align: center;
@@ -107,4 +107,56 @@ form/* {
 }
 .hidden{
       display:none;
+}
+
+button{
+      font-size: 20px;
+      margin-right: 10px;
+      padding:3px;
+}
+button:hover, button.selected{
+      /*color: green;*/
+
+      background-color: blue;
+      color: white;
+}
+#inviteBoard {
+      background-color: grey;
+
+      border: thin solid;
+}
+#inviteBoard p{
+      font-size: 25px;
+}
+#announceBoard{
+      /*display: absolute;*/
+      position: absolute;
+      top:50px;
+      /*width: 300px;*/
+      text-align: center;
+      /*border: thin solid;*/
+      background-color: lightblue;
+}
+.value, .color{
+      margin-bottom: 10px;
+}
+#announceBoard div label{
+      font-size: 16px;
+      background-color: grey;
+      padding: 5px;
+      margin-right: 10px;
+}
+#announceBoard div label:select{
+/*      background-color: blue;
+color: white;
+
+.test{
+      display:inline-block;
+      color:green;
+      /*font-size: 25px;*/
+}
+#a80, #a90{
+      display:inline-block;
+      color:green;
+      /*font-size: 25px;*/
 }
