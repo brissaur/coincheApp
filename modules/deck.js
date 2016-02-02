@@ -15,7 +15,7 @@ function Deck(){
 	};
 	this.test=function(){
 		// console.log('hello');
-		console.log( this.cards.slice(0,8));
+		// console.log( this.cards.slice(0,8));
 	};
 	this.distribute=function(){
 		this.shuffle();

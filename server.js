@@ -19,7 +19,6 @@ var session = require("express-session")({
 
 var io = require('socket.io')(http);
 var launcher = require(__dirname+'/modules/launcher')(io);
-launcher.getConnectedUsers();
 
 var sharedsession = require("express-socket.io-session");
 	app.use(session); 
@@ -104,7 +103,7 @@ app.get('/logout', function (req, res){
 app.get('/connectedUsers',auth.checkAuthorized, function (req, res){//TODO !!!!!!!!
 	var usersToSend = [];
 	var users = launcher.getConnectedUsers();
-	console.log(users);
+	// console.log(users);
 	for (index in users){
 		if(users[index].name!=req.session.user.name){
 			usersToSend.push(users[index].name);//TODO: tester pk KO

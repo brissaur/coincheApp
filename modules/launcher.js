@@ -18,7 +18,7 @@ module.exports = function(io){
 	io.on('connection', function(socket){
 		if (socket.handshake.session.user){
 			var name=socket.handshake.session.user.name;
-			console.log(name + ' connected with socket ' + socket.id);
+			// console.log(name + ' connected with socket ' + socket.id);
 			users[name] = {socket: socket.id, name: name, game:null};
 			socket.emit('connection_accepted', {message:'Connection accepted', name: name});//when connection refused? how?
 			socket.broadcast.emit('connection', {name: name});
@@ -37,13 +37,13 @@ module.exports = function(io){
 			}else{
 				var name='visitor';
 			}
-	   		console.log(name + ' disconnected.');
+	   		// console.log(name + ' disconnected.');
 			socket.broadcast.emit('disconnection', {name:name});
 		});
 		// <<<<<<<<<<<< Manage chat message >>>>>>>>>>>>>>
 		socket.on('chat_message', function(msg){
 			var name = socket.handshake.session.user.name;
-		    console.log('Chat message from '+ name + ': '+ msg.message);
+		    // console.log('Chat message from '+ name + ': '+ msg.message);
 		    io.emit('chat_message', {name: name, message: msg.message});//TODO EVOL roadcast+print local
 	  	});
 		// <<<<<<<<<<<< Manage game invitation >>>>>>>>>>>>>>
@@ -52,7 +52,7 @@ module.exports = function(io){
 			//todo check input user
 			var name = socket.handshake.session.user.name;
 			//créer un namespace ET SEN RAPELLER -> dans Games[]
-		    console.log('Game invitation from '+ name + ' for '+ msg.players);
+		    // console.log('Game invitation from '+ name + ' for '+ msg.players);
 		    
 		   	Games.invite(name,msg.players);
 	  	});
@@ -67,7 +67,7 @@ module.exports = function(io){
 	  	});
 		socket.on('game_invitation_refused', function(msg){
 			var name = socket.handshake.session.user.name;
-		    console.log('Game invitation '+msg.gameID+' refused by '+ name );
+		    // console.log('Game invitation '+msg.gameID+' refused by '+ name );
 		    
 		    Games.refuse(msg.gameID, name);
 	  	});
@@ -75,10 +75,17 @@ module.exports = function(io){
 		// <<<<<<<<<<<< Manage a player annonce >>>>>>>>>>>>>>
 	  	socket.on('announce', function(msg){//.card + .player + .firstPlayer
 			var name = socket.handshake.session.user.name;
-	  		console.log({type: 'announce', value:msg.value, color: msg.color, name: name});
 	  		assert(users[name]);
+	  		// console.log({type: 'announce', value:msg.value, color: msg.color, name: name});
 	  		var thisGame = Games.game(msg.gameID);
 	  		thisGame.announce(name, msg.value,msg.color);
+	  	});
+	  	socket.on('coinche', function(msg){//.card + .player + .firstPlayer
+			var name = socket.handshake.session.user.name;
+	  		assert(users[name]);
+	  		console.log({type: 'coinche', name: name});
+	  		var thisGame = Games.game(msg.gameID);
+	  		thisGame.coinche(name);
 	  	});
 	  	
 		// <<<<<<<<<<<< Manage a player plays >>>>>>>>>>>>>>

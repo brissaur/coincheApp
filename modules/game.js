@@ -30,7 +30,7 @@ module.exports = function(launcherIo){
 _res.invite = invite;
 function invite(name, players){
 	var inviteID = getNewAvailableGameId();//TODO: pb unicité
-	console.log('invite ' + inviteID + ' for '+ players);
+	// console.log('invite ' + inviteID + ' for '+ players);
 	//TODO: set Timeout!!!!!
 	// assert(!invites[inviteID]);
 	invites[inviteID] = [];
@@ -63,21 +63,21 @@ function invite(name, players){
 							// }
 	//TODO: set Timeout si client rep pas
 
-	console.log(invites);
+	// console.log(invites);
 
 }
 _res.accept = accept;
 function accept(inviteID, player){
-	console.log('invite ' + inviteID + ' ACCEPTED by' +player);
-	console.log(player +' accepts '+ inviteID);
-	console.log(invites);
+	// console.log('invite ' + inviteID + ' ACCEPTED by' +player);
+	// console.log(player +' accepts '+ inviteID);
+	// console.log(invites);
 	assert(inviteID);
 	assert(invites[inviteID]);
 		// console.log(invites[inviteID]);
 	assert(invites[inviteID][player]!=null);
 	invites[inviteID][player] = true;
 	if (readyToStart(inviteID)){
-				console.log('Game ready to start');
+				// console.log('Game ready to start');
 				var game = init(inviteID);
 				for (pIndex in game.playersIndexes){
 					var pName = game.playersIndexes[pIndex];
@@ -175,12 +175,12 @@ function Game(id, players){
 	
 	this.scores = [{match:0, game:0, jetee:0},{match:0, game:0, jetee:0}];
 	this.currentTrump = '';
-	this.currentAnnounce = {color:'', value:0, team:-1};
+	this.currentAnnounce = {color:'', value:0, coinche:false, team:-1};
 
 	this.nextJetee = function(callback){//callback()
 		this.distribute();
 		this.currentTrump = '';//TODO
-		this.currentAnnounce = {color:'', value:0};
+		this.currentAnnounce = {color:'', value:0,coinche:false, team:-1};
 		console.log({dealer: this.currentDealer, firstPlayer: this.firstTrickPlayer})
 
 		for (pIndex in this.playersIndexes){
@@ -236,13 +236,13 @@ function Game(id, players){
 									{msg:'', color: announce.color, value: announce.value});
 							}
 							if (announce.value == 0){//TODO: next game
-								console.log('all passed');
+								// console.log('all passed');
 								this.nextJetee();
 							} else {
-								console.log('finalAnnounce lets play');
+								// console.log('finalAnnounce lets play');
 								io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('play', {message:'',gameID:this.gameID, cards: this.playableCards()});	
 							}
-			console.log(this);
+			// console.log(this);
 			return callback?callback():1;
   		}
 
@@ -251,19 +251,33 @@ function Game(id, players){
   			this.firstTrickPlayer=this.currentPlayer;
   			this.currentAnnounce.value = value;
   			this.currentAnnounce.color = color;
+  			this.currentAnnounce.team = this.players[name].team;
   		}
 
   		// PLAYE DID PASS BUT NOT EVERYONE TALKED
   		this.currentPlayer=(this.currentPlayer+1)%this.nbPlayers;
-		console.log('next annonce');
+		// console.log('next annonce');
 		io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('announce', {gameID:this.gameID, lastAnnounce:(this.currentAnnounce.value), msg:'next announce'});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
 
 		if (callback) callback();
 
 	}
 
-	this.coinche = function (){
+	this.coinche = function (name){
+		io.emit('coinche', {name:name});
+		this.currentTrump = this.currentAnnounce.color;
+		this.currentAnnounce.coinche = true;
 
+		this.firstTrickPlayer = (this.currentDealer+1)%this.nbPlayers;
+		this.currentPlayer = this.firstTrickPlayer;
+		
+		for (pIndex in this.playersIndexes){
+			var pName = this.playersIndexes[pIndex];
+			io.to(users[pName].socket).emit('chosen_trumps', 
+				{msg:'', color: this.currentAnnounce.color, value: this.currentAnnounce.value, coinche: this.currentAnnounce.coinche});
+		}
+
+		io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('play', {message:'',gameID:this.gameID, cards: this.playableCards()});	
 	}
 
 	this.play = function(name, card, callback){//callback(endTrick)
@@ -292,20 +306,28 @@ function Game(id, players){
 
 
 	this.endTrick = function(){
+		console.log(this.scores)
 		var endJetee = this.currentTrickIndex == 7;
 		io.emit('end_trick', {message:'trick well ended', trick: this.currentTrick});
 		//count points
 		var winner = (this.trickWinner()+this.firstTrickPlayer)%this.nbPlayers;
-		this.scores[this.players[winner].team].jetee += trickValue(this.currentTrick, this.currentTrump);
+		// console.log({
+		// 	trickWinner: this.trickWinner(),
+		// 	firstTrickPlayer: this.firstTrickPlayer,
+		// 	nbPlayers: this.nbPlayers,
+		// 	winner: winner,
+		// 	trickvalue: trickValue(this.currentTrick, this.currentTrump)
+		// });
+		this.scores[this.players[this.playersIndexes[winner]].team].jetee += trickValue(this.currentTrick, this.currentTrump, endJetee);
 		this.scores[0].trick = 0;
 		this.scores[1].trick = 0;
 		if (endJetee) {
 			this.endJetee();
 		} else {
-			console.log('end trick');
+			// console.log('end trick');
 			// console.log((this.trickWinner()+this.firstTrickPlayer)%this.nbPlayers + '-' + this.trickWinner()+ '-'+this.firstTrickPlayer+ '-' +this.nbPlayers);
 			this.currentPlayer = winner;
-			console.log(this.playersIndexes[this.currentPlayer] +' won');
+			// console.log(this.playersIndexes[this.currentPlayer] +' won');
 			// console.log('THIS.FTPLAYER= ' + (this.trickWinner()+this.firstTrickPlayer)%this.nbPlayers);
 			this.currentTrickIndex++;
 			// this.currentPlayer = Math.floor((Math.random() * this.nbPlayers));//TODO EVOL: calculé quia  gagné le pli
@@ -318,33 +340,33 @@ function Game(id, players){
 
 	this.endJetee = function(){
 		//compter les points
+		// console.log(this);
+		// console.log(this.currentAnnounce);
 		var winner = this.scores[this.currentAnnounce.team].jetee >= this.currentAnnounce.value?this.currentAnnounce.team:(this.currentAnnounce.team+1)%2; 
-		this.scores[this.players[winner].team].match = this.currentAnnounce.value;
+		this.scores[this.players[this.playersIndexes[winner]].team].match = this.currentAnnounce.value;
 		var endMatch = (this.scores[0].match >=2000 || this.scores[1].match >=2000);
 		this.scores[0].jetee = 0;
 		this.scores[1].jetee = 0;
+		for (pIndex in this.playersIndexes){
+			var pName = this.playersIndexes[pIndex];
+			io.to(users[pName].socket).emit('end_jetee', {message:'jetee well ended'});
+		}	
 		// this.scores = [{match:0, game:0, jetee:0},{match:0, game:0, jetee:0}];
 		if (endMatch){
 			this.endMatch();
 		} else {
 
 		}
+
 		this.currentDealer = (this.currentDealer + 1)%this.nbPlayers;
 		this.firstTrickPlayer = (this.currentDealer + 1)%this.nbPlayers;
 		this.currentPlayer = this.firstTrickPlayer;
-		this.distribute();
 		this.currentTrickIndex = 0;
-		this.currentTrump = '';
-		this.currentAnnounce = {color:'', value:0};
-		console.log({dealer: this.currentDealer, firstPlayer: this.firstTrickPlayer})
 
 		console.log('endJetee');
-		for (pIndex in this.playersIndexes){
-				var pName = this.playersIndexes[pIndex];
-				io.to(users[pName].socket).emit('end_jetee', {message:'jetee well ended'});
-				io.to(users[pName].socket).emit('distribution', {message:'', cards: this.players[pName].cards});
-			}
-		io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('announce', {gameID:this.gameID, lastAnnounce:(this.currentAnnounce.value), msg:'next announce'});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
+		this.nextJetee();
+		
+
 	}
 	this.endMatch = function(){
 		var winner = this.scores[0].match >=2000 ? 0:1;
@@ -472,6 +494,11 @@ function manageTrumps(playedCards, availableCards, trumpColor){
 
 function trickValue(trick, trump, lastTrick){
 	var res = 0;
+	// console.log({
+	// 	trick: trick,
+	// 	trump: trump,
+	// 	lastTrick: lastTrick
+	// });
 	trick.forEach(function(card){
 		if (trump == 'AT' || trump == Cards[card].color){
 			res += Cards[card].allTrumpsPoints
@@ -484,4 +511,5 @@ function trickValue(trick, trump, lastTrick){
 			res += 10;
 		}
 	});
+	return res;
 }
