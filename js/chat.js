@@ -189,6 +189,14 @@ socket.on('end_trick', function(msg){
 });
 socket.on('end_jetee', function(msg){
   $('#messages').append($('<li>').text(msg.message));
-  distribute(cards);
+  updateScores(msg.scores);
 });
 
+function updateScores(scores){
+  $('#scoreUsGame').text(scores[0].game);
+  $('#scoreUsMatch').text(scores[0].match);
+  $('#scoreUsJetee').text(scores[0].jetee);
+  $('#scoreThemGame').text(scores[1].game);
+  $('#scoreThemMatch').text(scores[1].match);
+  $('#scoreThemJetee').text(scores[1].jetee);
+}

@@ -160,3 +160,8 @@ color: white;
       color:green;
       /*font-size: 25px;*/
 }
+
+table td{
+      border: thin solid;
+      margin:2px;
+}

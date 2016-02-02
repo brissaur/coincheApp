@@ -10,6 +10,18 @@ function template(){
 	cardNames.forEach(function(cName){
 		cards[cName] = new Card(cName);
 	});
+	// var at = 0, nt = 0, spades=0;
+	
+	// for (index in cards){
+	// 	at += cards[index].allTrumpsPoints;
+	// 	nt += cards[index].noTrumpsPoints;
+	// 	spades += (cards[index].color == 'S'? cards[index].trumpPoints:cards[index].points);
+	// }
+	// console.log({
+	// 	at:at,
+	// 	nt:nt,
+	// 	normal:spades
+	// });
 	return cards;
 }
 
@@ -57,7 +69,7 @@ function getCardInfo(value){
 			res.trumpOrder=7;
 			res.points=0;
 			res.trumpPoints=14;
-			res.allTrumpsPoints=14;
+			res.allTrumpsPoints=9;
 			res.noTrumpsPoints=0;
 		break;
 		case '10':
@@ -65,7 +77,7 @@ function getCardInfo(value){
 			res.trumpOrder=5;
 			res.points=10;
 			res.trumpPoints=10;
-			res.allTrumpsPoints=10;
+			res.allTrumpsPoints=6;
 			res.noTrumpsPoints=10;
 		break;
 		case 'J':
@@ -73,7 +85,7 @@ function getCardInfo(value){
 			res.trumpOrder=8;
 			res.points=2;
 			res.trumpPoints=20;
-			res.allTrumpsPoints=20;
+			res.allTrumpsPoints=12;
 			res.noTrumpsPoints=2;
 		break;
 		case 'Q':
@@ -81,7 +93,7 @@ function getCardInfo(value){
 			res.trumpOrder=3;
 			res.points=3;
 			res.trumpPoints=3;
-			res.allTrumpsPoints=3;
+			res.allTrumpsPoints=2;
 			res.noTrumpsPoints=3;
 		break;
 		case 'K':
@@ -89,7 +101,7 @@ function getCardInfo(value){
 			res.trumpOrder=4;
 			res.points=4;
 			res.trumpPoints=4;
-			res.allTrumpsPoints=4;
+			res.allTrumpsPoints=2;
 			res.noTrumpsPoints=4;
 		break;
 		case 'A':
@@ -97,7 +109,7 @@ function getCardInfo(value){
 			res.trumpOrder=6;
 			res.points=11;
 			res.trumpPoints=11;
-			res.allTrumpsPoints=11;
+			res.allTrumpsPoints=7;
 			res.noTrumpsPoints=19;
 		break;
 		default:

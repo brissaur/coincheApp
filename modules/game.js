@@ -306,21 +306,14 @@ function Game(id, players){
 
 
 	this.endTrick = function(){
-		console.log(this.scores)
 		var endJetee = this.currentTrickIndex == 7;
 		io.emit('end_trick', {message:'trick well ended', trick: this.currentTrick});
 		//count points
 		var winner = (this.trickWinner()+this.firstTrickPlayer)%this.nbPlayers;
-		// console.log({
-		// 	trickWinner: this.trickWinner(),
-		// 	firstTrickPlayer: this.firstTrickPlayer,
-		// 	nbPlayers: this.nbPlayers,
-		// 	winner: winner,
-		// 	trickvalue: trickValue(this.currentTrick, this.currentTrump)
-		// });
 		this.scores[this.players[this.playersIndexes[winner]].team].jetee += trickValue(this.currentTrick, this.currentTrump, endJetee);
 		this.scores[0].trick = 0;
 		this.scores[1].trick = 0;
+		console.log(this.scores);
 		if (endJetee) {
 			this.endJetee();
 		} else {
@@ -342,15 +335,18 @@ function Game(id, players){
 		//compter les points
 		// console.log(this);
 		// console.log(this.currentAnnounce);
+		if (this.scores[this.currentAnnounce.team].jetee == 162) this.scores[this.currentAnnounce.team].jetee = 250;
+		//TODO: AJOUTER BELOTTE
 		var winner = this.scores[this.currentAnnounce.team].jetee >= this.currentAnnounce.value?this.currentAnnounce.team:(this.currentAnnounce.team+1)%2; 
 		this.scores[this.players[this.playersIndexes[winner]].team].match = this.currentAnnounce.value;
 		var endMatch = (this.scores[0].match >=2000 || this.scores[1].match >=2000);
-		this.scores[0].jetee = 0;
-		this.scores[1].jetee = 0;
+		console.log(this.scores);
 		for (pIndex in this.playersIndexes){
 			var pName = this.playersIndexes[pIndex];
-			io.to(users[pName].socket).emit('end_jetee', {message:'jetee well ended'});
+			io.to(users[pName].socket).emit('end_jetee', {message:'jetee well ended', scores:this.scores});
 		}	
+		this.scores[0].jetee = 0;
+		this.scores[1].jetee = 0;
 		// this.scores = [{match:0, game:0, jetee:0},{match:0, game:0, jetee:0}];
 		if (endMatch){
 			this.endMatch();
@@ -373,6 +369,10 @@ function Game(id, players){
 		this.scores[winner].match ++;
 		this.scores[0].match = 0;
 		this.scores[1].match = 0;
+		for (pIndex in this.playersIndexes){
+			var pName = this.playersIndexes[pIndex];
+			io.to(users[pName].socket).emit('end_match', {message:'match well ended', scores:this.scores});
+		}	
 	}
 
 	this.playableCards = function(){
@@ -500,16 +500,16 @@ function trickValue(trick, trump, lastTrick){
 	// 	lastTrick: lastTrick
 	// });
 	trick.forEach(function(card){
-		if (trump == 'AT' || trump == Cards[card].color){
-			res += Cards[card].allTrumpsPoints
+		if (trump == 'AT'){
+			res += Cards[card].allTrumpsPoints;
 		} else if (trump == 'NT'){
-			res += Cards[card].noTrumpsPoints
+			res += Cards[card].noTrumpsPoints;
+		} else if (trump == Cards[card].color){
+			res += Cards[card].trumpPoints;
 		} else {
-			res += Cards[card].points
-		}
-		if (lastTrick && (trump != 'NT')){
-			res += 10;
+			res += Cards[card].points;
 		}
 	});
+	if (lastTrick) res += 10;
 	return res;
 }
