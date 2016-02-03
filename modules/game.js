@@ -43,24 +43,24 @@ function invite(name, players){
 						//TODO: decommenter underneath
 						// io.emit('game_invitation', {name: name, message: '', gameID: gameID});//TODO EVOL roadcast+print local
 						// socket.broadcast.emit('game_invitation', {name: name, message: '', gameID: gameID});//TODO EVOL roadcast+print local
-						io.to(users[pName].socket).emit('game_invitation', {msg:'', name: name, gameID: inviteID});
+						// io.to(users[pName].socket).emit('game_invitation', {msg:'', name: name, gameID: inviteID});
 	});
 						    //////////////////A VIRER TEST
-						 //    players.forEach(function(pName){
-						 //    	accept(inviteID,pName);
-						 //    });
+						    players.forEach(function(pName){
+						    	accept(inviteID,pName);
+						    });
 
-							// if (readyToStart(inviteID)){
-							// 	console.log('Game ready to start');
-							// 	init(inviteID, function(game){
-							// 		for (pIndex in game.playersIndexes){
-							// 			var pName = game.playersIndexes[pIndex];
-							// 			io.to(users[pName].socket).emit('initialize_game', 
-							// 				{msg:'', players: game.playersIndexes, dealer: game.currentDealer});
-							// 		}
-							// 		game.nextJetee();
-							// 	});
-							// }
+							if (readyToStart(inviteID)){
+								console.log('Game ready to start');
+								init(inviteID, function(game){
+									for (pIndex in game.playersIndexes){
+										var pName = game.playersIndexes[pIndex];
+										io.to(users[pName].socket).emit('initialize_game', 
+											{msg:'', players: game.playersIndexes, dealer: game.currentDealer});
+									}
+									game.nextJetee();
+								});
+							}
 	//TODO: set Timeout si client rep pas
 
 	// console.log(invites);
@@ -287,17 +287,6 @@ function Game(id, players){
 	}
 
 	this.play = function(name, card, callback){//callback(endTrick)
-		console.log({
-			name: name,
-			card: card,
-			should_play: this.playersIndexes[this.currentPlayer]
-		});
-		// console.log({
-		// 	dealer: {name: this.playersIndexes[this.currentDealer], id:this.currentDealer},
-		// 	firstTrickPlayer: {name: this.playersIndexes[this.firstTrickPlayer] , id:this.firstTrickPlayer},
-		// 	currentPlayer: {name: this.playersIndexes[this.currentPlayer] , id:this.currentPlayer}
-		// });
-
   		assert(this.playersIndexes.indexOf(name)!=-1);
   		assert(this.playersIndexes.indexOf(name)===this.currentPlayer, " player is " + name + " but should be " + this.playersIndexes[this.currentPlayer]);
 
@@ -327,10 +316,16 @@ function Game(id, players){
 		io.emit('end_trick', {message:'trick well ended', trick: this.currentTrick});
 		//count points
 		var winner = (this.trickWinner()+this.firstTrickPlayer)%this.nbPlayers;
+		console.log({
+			winnerRank: this.trickWinner(),
+			first: this.firstTrickPlayer,
+			winner : winner
+		})
 		this.scores[this.players[this.playersIndexes[winner]].team].jetee += trickValue(this.currentTrick, this.currentTrump, endJetee);
 		this.scores[0].trick = 0;
 		this.scores[1].trick = 0;
 		// console.log(this.scores);
+		this.currentTrick = [];
 		if (endJetee) {
 			this.endJetee();
 		} else {
@@ -339,7 +334,6 @@ function Game(id, players){
 			this.firstTrickPlayer = this.currentPlayer;
 			io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('play', {message:'from this.endTrick',gameID:this.gameID, cards: this.playableCards()});	
 		}
-		this.currentTrick = [];
 
 	}
 
@@ -373,7 +367,7 @@ function Game(id, players){
 		this.firstTrickPlayer = (this.currentDealer + 1)%this.nbPlayers;
 		this.currentPlayer = this.firstTrickPlayer;
 		this.currentTrickIndex = 0;
-
+		// this.currentTrick = [];
 		console.log('endJetee');
 		this.nextJetee();
 		
@@ -391,11 +385,10 @@ function Game(id, players){
 	}
 
 	this.playableCards = function(){
-		debugger;
-
 		// console.log('PLAYABLE CARDS...');
 		var thisPlayer = this.players[this.playersIndexes[this.currentPlayer]];
 		//IF IM FIRST TO PLAY
+		console.log(this.currentTrick);
 		if (this.firstToPlay()) return thisPlayer.cards;
 		// console.log('NOT FIRST...');
 

@@ -129,7 +129,7 @@ socket.on('announce', function(msg){
 });
 
 socket.on('announced', function(msg){
-  $('#'+ places[msg.name] + ' .announce').text(' ' + (msg.value=0?'Pass':msg.value + msg.color));
+  $('#'+ places[msg.name] + ' .announce').text(' ' + (msg.value==0?'Pass':msg.value + msg.color));
 });
 socket.on('coinche', function(msg){
   $('#'+ places[msg.name] + ' .announce').text('Coinched!');
