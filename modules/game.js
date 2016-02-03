@@ -10,7 +10,7 @@ var invites = {};
 var io;
 var users = require('./connectedUsers');
 var _res = {}//resulted element from require;
-
+var TIMEUNIT = 1000;
 var MAXPLAYER=2;
 var AUTHORIZEDCARDS=['7H','8H','9H','10H','JH','QH','KH','AH','7D','8D','9D','10D','JD','QD','KD','AD','7S','8S','9S','10S','JS','QS','KS','AS','7C','8C','9C','10C','JC','QC','KC','AC'];
 
@@ -19,48 +19,43 @@ module.exports = function(launcherIo){
 	io = launcherIo;
 	return _res;
 }
-// _res.test = function(){
-// 	console.log('test');
-// 	console.log(users);
-// }
-
 // ==============================================================
 // ================== INVITATIONS ===================================
 // ==============================================================
 _res.invite = invite;
 function invite(name, players){
-	var inviteID = getNewAvailableGameId();//TODO: pb unicité
-	// console.log('invite ' + inviteID + ' for '+ players);
-	//TODO: set Timeout!!!!!
-	// assert(!invites[inviteID]);
-	invites[inviteID] = [];
-	invites[inviteID][name] = true;
+			//TODO: verifier que users.game = null (= quil peut etre invité)
+	do {
+		var inviteID = getNewAvailableGameId();
+	} while (invites[inviteID] != null);
+
+	invites[inviteID] = {player:[]};
+	invites[inviteID].player[name] = true;
 	users[name].game = {gameID:inviteID};
 	players.forEach(function(pName){
 		assert(users[pName]);
-		invites[inviteID][pName] = false;
+		invites[inviteID].player[pName] = false;
     	users[pName].game = {gameID:inviteID};//, accepted:false}; ---> ca veut dire quil es toccupé par une game quil ait accepte ou pas
 						//TODO: decommenter underneath
-						// io.emit('game_invitation', {name: name, message: '', gameID: gameID});//TODO EVOL roadcast+print local
-						// socket.broadcast.emit('game_invitation', {name: name, message: '', gameID: gameID});//TODO EVOL roadcast+print local
-						// io.to(users[pName].socket).emit('game_invitation', {msg:'', name: name, gameID: inviteID});
+						io.to(users[pName].socket).emit('game_invitation', {msg:'', name: name, gameID: inviteID});
 	});
 						    //////////////////A VIRER TEST
-						    players.forEach(function(pName){
-						    	accept(inviteID,pName);
-						    });
+						 //    players.forEach(function(pName){
+						 //    	accept(inviteID,pName);
+						 //    });
 
-							if (readyToStart(inviteID)){
-								console.log('Game ready to start');
-								init(inviteID, function(game){
-									for (pIndex in game.playersIndexes){
-										var pName = game.playersIndexes[pIndex];
-										io.to(users[pName].socket).emit('initialize_game', 
-											{msg:'', players: game.playersIndexes, dealer: game.currentDealer});
-									}
-									game.nextJetee();
-								});
-							}
+							// if (readyToStart(inviteID)){
+							// 	console.log('Game ready to start');
+							// 	init(inviteID, function(game){
+							// 		for (pIndex in game.playersIndexes){
+							// 			var pName = game.playersIndexes[pIndex];
+							// 			io.to(users[pName].socket).emit('initialize_game', 
+							// 				{msg:'', players: game.playersIndexes, dealer: game.currentDealer});
+							// 		}
+							// 		game.nextJetee();
+							// 	});
+							// }
+	invites[inviteID].timeoutFunction = setTimeout(function(){invitationCancel(inviteID,null); }, 10*TIMEUNIT);
 	//TODO: set Timeout si client rep pas
 
 	// console.log(invites);
@@ -73,14 +68,18 @@ function accept(inviteID, player){
 	// console.log(invites);
 	assert(inviteID);
 	assert(invites[inviteID]);
-		// console.log(invites[inviteID]);
-	assert(invites[inviteID][player]!=null);
-	invites[inviteID][player] = true;
+	assert(invites[inviteID].player);
+	assert(invites[inviteID].player[player]!=null);
+	invites[inviteID].player[player] = true;
 	if (readyToStart(inviteID)){
+		clearTimeout(invites[inviteID].timeoutFunction);
 				// console.log('Game ready to start');
 				var game = init(inviteID);
+				console.log(users);
+				console.log(game.playersIndexes);
 				for (pIndex in game.playersIndexes){
 					var pName = game.playersIndexes[pIndex];
+					console.log['pName : ==> ' + pName];
 					io.to(users[pName].socket).emit('initialize_game', 
 						{msg:'', players: game.playersIndexes, dealer: game.currentDealer});
 				}
@@ -90,9 +89,13 @@ function accept(inviteID, player){
 _res.refuse = refuse;
 function refuse(inviteID, player){
 	assert(invites[inviteID]);
-	assert(invites[inviteID][player]!=null);
+	assert(invites[inviteID].player[player]!=null);
+	clearTimeout(invites[inviteID].timeoutFunction);
+	invitationCancel(inviteID, player);
+}
 
-    invites[inviteID].forEach(function(pName){
+function invitationCancel(inviteID, player){
+	invites[inviteID].player.forEach(function(pName){
     	assert(users[pName]);
     	assert(users[pName].game);
     	assert(users[pName].game.gameID == inviteID);
@@ -100,17 +103,15 @@ function refuse(inviteID, player){
     })
 	delete invites[inviteID];
 
-    io.emit('game_invitation_cancelled', {message:'', gameID: inviteID, name:player});
-
-
-	// est ce quon renvoit les players?
+	io.emit('game_invitation_cancelled', {message:'', gameID: inviteID, name:player});
 }
+
 _res.readyToStart = readyToStart;
 function readyToStart(inviteID){
 	assert(invites[inviteID]);
 	var gameMustStart = true;
-	for (index in invites[inviteID]){
-		gameMustStart = gameMustStart && invites[inviteID][index];
+	for (index in invites[inviteID].player){
+		gameMustStart = gameMustStart && invites[inviteID].player[index];
 	}
 	return gameMustStart;
 }
@@ -121,9 +122,10 @@ function readyToStart(inviteID){
 _res.init = init;
 function init(gameID){
 	assert(invites[gameID]);
+	assert(invites[gameID].player);
 	assert(readyToStart(gameID));
 	var players = [];
-	for (player in invites[gameID]){
+	for (player in invites[gameID].player){
 		players.push(player);
 	}
 	return new Game(gameID, players);
@@ -342,6 +344,8 @@ function Game(id, players){
 		// console.log(this);
 		// console.log(this.currentAnnounce);
 		if (this.scores[this.currentAnnounce.team].jetee == 162) this.scores[this.currentAnnounce.team].jetee = 250;
+	var BELOTTE = false; //TODO !!
+		if (BELOTTE) this.scores[this.currentAnnounce.team].jetee +=20;
 		//TODO: AJOUTER BELOTTE
 		var winner = this.scores[this.currentAnnounce.team].jetee >= this.currentAnnounce.value?this.currentAnnounce.team:(this.currentAnnounce.team+1)%2; 
 		this.scores[this.players[this.playersIndexes[winner]].team].match += this.currentAnnounce.value;

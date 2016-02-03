@@ -100,13 +100,13 @@ app.get('/logout', function (req, res){
   res.redirect('/login');
 });
 		//CONNECTED USER ROUTE
-app.get('/connectedUsers',auth.checkAuthorized, function (req, res){//TODO !!!!!!!!
+app.get('/connectedUsers',auth.checkAuthorized, function (req, res){
 	var usersToSend = [];
 	var users = launcher.getConnectedUsers();
 	// console.log(users);
 	for (index in users){
 		if(users[index].name!=req.session.user.name){
-			usersToSend.push(users[index].name);//TODO: tester pk KO
+			usersToSend.push(users[index].name);
 		}
 	}
   	res.send(usersToSend);
