@@ -11,15 +11,15 @@ BUGGS
 jeu de carte en non absolu
 pb du register
 double connection 'a ' at the same time;
-qui gagne les plis en AT : KO
 
 FONTIONALITIES
+tri user coté client lors dune connection 
+
 choisir les équipes au départ
-ajouter comptage de points
-ajouter affichage des points
-clik to announce
+
 bloquer nouvel invite game lors d'une game
 ajouter points belote
+
 reconnection a une game
 display annonce popre '80H' -> '80 &hearts'
 
@@ -27,15 +27,6 @@ le scroll message
 client : trier alphabetique nom users
 _____________________________________________________
 _____________________________________________________
-1/Chat
-2/file de message chacun son tour
-3/telephone arabae
-4/mise a jour des cartes qd on joue + efface quand pli
-
-5/mettre en bootstrap
-6/systeme de connexion 
-6/afficher liste des joueurs connectes
-7/systeme d invitation -> all
 
 
 

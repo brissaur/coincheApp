@@ -1,6 +1,6 @@
 {
   "name": "coincheapp",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "coinche application by brissaur",
   "main": "index.js",
   "scripts": {

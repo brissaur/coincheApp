@@ -25,9 +25,7 @@ module.exports = function(launcherIo){
 _res.invite = invite;
 function invite(name, players){
 			//TODO: verifier que users.game = null (= quil peut etre invité)
-	do {
-		var inviteID = getNewAvailableGameId();
-	} while (invites[inviteID] != null);
+	var inviteID = getNewAvailableGameId();
 
 	invites[inviteID] = {player:[]};
 	invites[inviteID].player[name] = true;
@@ -63,9 +61,6 @@ function invite(name, players){
 }
 _res.accept = accept;
 function accept(inviteID, player){
-	// console.log('invite ' + inviteID + ' ACCEPTED by' +player);
-	// console.log(player +' accepts '+ inviteID);
-	// console.log(invites);
 	assert(inviteID);
 	assert(invites[inviteID]);
 	assert(invites[inviteID].player);
@@ -73,7 +68,6 @@ function accept(inviteID, player){
 	invites[inviteID].player[player] = true;
 	if (readyToStart(inviteID)){
 		clearTimeout(invites[inviteID].timeoutFunction);
-				// console.log('Game ready to start');
 				var game = init(inviteID);
 				console.log(users);
 				console.log(game.playersIndexes);
@@ -130,24 +124,15 @@ function init(gameID){
 	}
 	return new Game(gameID, players);
 }
-// _res.init = init;
-// _res.newGame = newGame;
-// function newGame(players){
-// 	var g = new Game(players);
-// 	games[g.id] = g;
-// 	return g;
-// }
 _res.game = game;
 function game(gameID){
 	return games[gameID];
 }
-// _res.getNewAvailableGameId = getNewAvailableGameId;
 function getNewAvailableGameId(){
-	return Math.floor((Math.random() * 1000));
-}
-// _res.getNewAvailableGameId = getNewAvailableGameId;
-function setNewAvailableGameId(gameID){
-	//
+	do {
+		var id = Math.floor((Math.random() * 1000));
+	} while (invites[id] != null);
+	return id;
 }
 function Game(id, players){
 	if (games[id]) return null;
@@ -159,7 +144,6 @@ function Game(id, players){
 	for(index in players){
 		this.players[players[index]]={team: index%2};
 	}
-	//TODO: add team numbers 0 / 1
 	this.nbPlayers=players.length;
 
 	rand=Math.floor((Math.random() * this.nbPlayers));
@@ -198,16 +182,10 @@ function Game(id, players){
 
 	this.distribute = function(callback){
 		var cards = this.deck.distribute();
-		// console.log('cards=' + cards);
-		// assert(cards.length==this.playersIndexes.length);//2!=4 for test
 		var len = this.playersIndexes.length;//cards.length 
-		// console.log('len=' + len);
 		for (var i = 0; i < len; i++) {
-			// console.log('loop: ' + cards[i]);
 			this.players[this.playersIndexes[i]].cards = cards[i];
 		};
-		// console.log(this.players);
-		// console.log('////////////////////');
 	}
 // ==============================================================
 // ================== GAME RULES ===================================
