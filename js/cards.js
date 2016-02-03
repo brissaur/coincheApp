@@ -73,19 +73,6 @@ var timeToPlay = function(gameID, cards){
     });
   });
   $('#bottomPlayer .announce').text('Your turn');
-
-  // $('#playerCards').children()//TODO que celles qui ont le droit
-  //     .css('border','thin solid red')
-  //     .on('click', function (event){
-  //       var isItATen = this.src.substr(-7,2)=='10';
-  //       var firstIndex = isItATen? -7:-6;
-  //       var length = isItATen? 3:2;
-  //       var targetCard =this.src.substr(firstIndex,length);
-
-  //       socket.emit('play', {card: targetCard, gameID:gameID});
-  //       $('#playerCards').children().css('border','').unbind('click');
-  //       this.parentNode.removeChild(this);
-  //     });
 }
 
 

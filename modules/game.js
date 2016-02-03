@@ -315,9 +315,9 @@ function Game(id, players){
 		var endJetee = this.currentTrickIndex == 7;
 		io.emit('end_trick', {message:'trick well ended', trick: this.currentTrick});
 		//count points
-		var winner = (this.trickWinner()+this.firstTrickPlayer)%this.nbPlayers;
+		var winner = (this.trickWinner().index+this.firstTrickPlayer)%this.nbPlayers;
 		console.log({
-			winnerRank: this.trickWinner(),
+			winnerRank: this.trickWinner().index,
 			first: this.firstTrickPlayer,
 			winner : winner
 		})
@@ -344,7 +344,7 @@ function Game(id, players){
 		if (this.scores[this.currentAnnounce.team].jetee == 162) this.scores[this.currentAnnounce.team].jetee = 250;
 		//TODO: AJOUTER BELOTTE
 		var winner = this.scores[this.currentAnnounce.team].jetee >= this.currentAnnounce.value?this.currentAnnounce.team:(this.currentAnnounce.team+1)%2; 
-		this.scores[this.players[this.playersIndexes[winner]].team].match = this.currentAnnounce.value;
+		this.scores[this.players[this.playersIndexes[winner]].team].match += this.currentAnnounce.value;
 		var endMatch = (this.scores[0].match >=2000 || this.scores[1].match >=2000);
 		// console.log(this.scores);
 		for (pIndex in this.playersIndexes){
@@ -388,7 +388,7 @@ function Game(id, players){
 		// console.log('PLAYABLE CARDS...');
 		var thisPlayer = this.players[this.playersIndexes[this.currentPlayer]];
 		//IF IM FIRST TO PLAY
-		console.log(this.currentTrick);
+		// console.log(this.currentTrick);
 		if (this.firstToPlay()) return thisPlayer.cards;
 		// console.log('NOT FIRST...');
 
@@ -398,7 +398,7 @@ function Game(id, players){
 			// console.log('I HAVE THE COLOR...');
 			if ((this.colorPlayed()==this.currentTrump) || this.currentTrump == 'AT'){
 				// console.log('WHICH IS TRUMP..');
-				return manageTrumps(this.currentTrick, thisPlayer.cards, this.currentTrump);
+				return manageTrumps(this.currentTrick, thisPlayer.cards, this.currentTrump,this.colorPlayed());
 			}
 			// console.log('WHICH IS NOT TRUMP..');
 			return colorPlayedCards;
@@ -411,9 +411,28 @@ function Game(id, players){
 		//I MUST TRUMP
 		var trumpPlayedCards = cardsOfColor(thisPlayer.cards,this.currentTrump);
 		if(trumpPlayedCards.length>0){
-			return manageTrumps(this.currentTrick, thisPlayer.cards, this.currentTrump);
+			return manageTrumps(this.currentTrick, thisPlayer.cards, this.currentTrump,this.colorPlayed());
 		}
 		// console.log('NO TRUMPS...');
+		return thisPlayer.cards;
+	}
+
+	this.playableCards2 = function(){//sale
+		var thisPlayer = this.players[this.playersIndexes[this.currentPlayer]];
+		if (this.firstToPlay()) return thisPlayer.cards;
+
+		var colorPlayedCards = cardsOfColor(thisPlayer.cards,this.colorPlayed());
+		if (colorPlayedCards.length > 0){
+			if ((this.colorPlayed()==this.currentTrump) || this.currentTrump == 'AT'){
+				return manageTrumps(this.currentTrick, thisPlayer.cards, this.currentTrump);
+			}
+			return colorPlayedCards;
+		}
+		if (this.partnerIsWinning()) return thisPlayer.cards;
+		var trumpPlayedCards = cardsOfColor(thisPlayer.cards,this.currentTrump);
+		if(trumpPlayedCards.length>0){
+			return manageTrumps(this.currentTrick, thisPlayer.cards, this.currentTrump);
+		}
 		return thisPlayer.cards;
 	}
 	
@@ -429,15 +448,9 @@ function Game(id, players){
 	}
 
 	this.partnerIsWinning = function(){ //ROBINROBINROBIN
-		// console.log({
-		// 	type: 'partnerIsWinning',
-		// 	currentPlayer: this.currentPlayer,
-		// 	trick: this.currentTrick,
-		// 	trickWinner: this.trickWinner()
-		// })
 		var len = this.currentTrick.length;
 		if (len >=2){
-			return this.trickWinner() == len - 2;//TODO
+			return this.trickWinner().index == len - 2;//TODO
 		}
 		return false;
 	}
@@ -448,6 +461,7 @@ function Game(id, players){
 		var cut = false;
 		var max = 0;
 		var winnerIndex = 0;
+		var winningCard = {};
 		for (index in this.currentTrick){
 			var card = Cards[this.currentTrick[index]];
 
@@ -456,22 +470,25 @@ function Game(id, players){
 				if ((card.color == this.currentTrump) && (card.trumpOrder > max)){
 					max = card.trumpOrder;
 					winnerIndex = index;
+					winningCard = card;
 				}
 			} else {
 				if (card.color == this.currentTrump) {
 					cut = true;
 					max = card.trumpOrder;
 					winnerIndex = index;
+					winningCard = card;
 				} else if ((card.color == this.colorPlayed()) && (card[defaultOrder] > max)){
 					max = card[defaultOrder];
 					winnerIndex = index;
+					winningCard = card;
 				}
 			}
 
 
 		}
 		res = (winnerIndex+this.firstTrickPlayer)%this.nbPlayers;
-		return parseInt(winnerIndex);
+		return {card: winningCard, index: parseInt(winnerIndex)};
 	}
 
 	// this.whoWins = function (){
@@ -489,11 +506,11 @@ function cardsOfColor (cards, color){
 	return targetCards;
 }
 
-function manageTrumps(playedCards, availableCards, trumpColor){
+function manageTrumps(playedCards, availableCards, trumpColor, playedColor){
 	// console.log(playedCards + '-->' + availableCards + '-->' + trumpColor);
 	var maxTrump = 0;
 	playedCards.forEach(function(card){
-		if (Cards[card].color == trumpColor){
+		if (Cards[card].color == trumpColor || (trumpColor == 'AT' && Cards[card].color == playedColor)) {
 			if (Cards[card].trumpOrder > maxTrump) maxTrump = Cards[card].trumpOrder;
 		}
 	});
@@ -502,7 +519,7 @@ function manageTrumps(playedCards, availableCards, trumpColor){
 	var lowerTrumps = [];
 	var upperTrumps = [];
 	availableCards.forEach(function(card){
-		if (Cards[card].color == trumpColor){
+		if (Cards[card].color == trumpColor|| (trumpColor == 'AT' && Cards[card].color == playedColor)) {
 			if (Cards[card].trumpOrder > maxTrump){
 				upperTrumps.push(card);
 			} else {
