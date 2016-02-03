@@ -165,3 +165,9 @@ table td{
       border: thin solid;
       margin:2px;
 }
+
+.announce{
+      background-color: grey;
+      color:white;
+      
+}

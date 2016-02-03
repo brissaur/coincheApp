@@ -119,6 +119,7 @@ socket.on('disconnection', function(msg){
 // <<<<<<<<<<<< Manage my turn to play >>>>>>>>>>>>>>
 socket.on('play', function(msg){
       timeToPlay(msg.gameID, msg.cards);
+
 });
 
 socket.on('announce', function(msg){
@@ -128,8 +129,10 @@ socket.on('announce', function(msg){
 });
 
 socket.on('announced', function(msg){
-  $('#messages').append($('<li>').text(msg.name + ' announced ' + msg.value + msg.color));
-
+  $('#'+ places[msg.name] + ' .announce').text(' ' + (msg.value=0?'Pass':msg.value + msg.color));
+});
+socket.on('coinche', function(msg){
+  $('#'+ places[msg.name] + ' .announce').text('Coinched!');
 });
 
 // <<<<<<<<<<<< Manage game initialization >>>>>>>>>>>>>>
@@ -142,7 +145,8 @@ socket.on('initialize_game', function(msg){//cards, players, dealer
     var playername = msg.players[(i+myIndex)%msg.players.length];
     places[playername]=positions[i];
     // console.log('places['+playername+']='+places[playername]);
-    document.getElementById(positions[i]).childNodes[0].innerHTML=playername;
+    // document.getElementById(positions[i]).childNodes[0].innerHTML=playername;
+    $('#'+ places[playername] + ' .playerName').text(playername)
   };
 });
 socket.on('distribution', function(msg){//cards, players, dealer
@@ -161,10 +165,15 @@ socket.on('chosen_trumps', function(msg){//value, color
   } else {
     $('#messages').append($('<li>').text(' Chosen trumps: ' + msg.color));
   }
+
+  for (pName in places){
+    $('#'+ places[pName] + ' .announce').text('');
+  }
 });
 // <<<<<<<<<<<< Manage a player played >>>>>>>>>>>>>>
 socket.on('played', function(msg){
   var targetCard = document.getElementById(places[msg.name]);
+
   // console.log('played');
   var c = document.createElement('img');
     c.src='/images/cards/'+msg.card+'.png';
@@ -180,10 +189,11 @@ socket.on('played', function(msg){
 socket.on('end_trick', function(msg){
   $('#messages').append($('<li>').text(msg.message));
   for(divs in places){
-    var child = document.getElementById(places[divs]).childNodes[1];
-    if (child){
-      child.parentNode.removeChild(child);
-    }
+    $('#' + places[divs] + ' img').remove();
+    // var child = document.getElementById(places[divs]).childNodes[1];
+    // if (child){
+    //   child.parentNode.removeChild(child);
+    // }
     // document.getElementById(places[divs]).childNodes[0].src='';
   }
 });

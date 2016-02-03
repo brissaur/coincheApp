@@ -181,7 +181,7 @@ function Game(id, players){
 		this.distribute();
 		this.currentTrump = '';//TODO
 		this.currentAnnounce = {color:'', value:0,coinche:false, team:-1};
-		console.log({dealer: this.currentDealer, firstPlayer: this.firstTrickPlayer})
+		console.log({dealer: this.currentDealer, firstPlayer: this.firstTrickPlayer, currentPlayer: this.currentPlayer});
 
 		for (pIndex in this.playersIndexes){
 			var pName = this.playersIndexes[pIndex];
@@ -212,6 +212,11 @@ function Game(id, players){
 // ==============================================================
 //When a player plays a card
 	this.announce = function(name, value, color, callback){
+		// console.log({
+		// 	dealer: {name: this.playersIndexes[this.currentDealer], id:this.currentDealer},
+		// 	firstTrickPlayer: {name: this.playersIndexes[this.firstTrickPlayer] , id:this.firstTrickPlayer},
+		// 	currentPlayer: {name: this.playersIndexes[this.currentPlayer] , id:this.currentPlayer}
+		// });
   		assert(this.playersIndexes.indexOf(name)!=-1);
   		assert(this.playersIndexes.indexOf(name)===this.currentPlayer);
 
@@ -221,6 +226,7 @@ function Game(id, players){
 
   		// END OF ANNOUNCE 
   		if (value == 0 && ((this.currentPlayer+1)%this.nbPlayers)==this.firstTrickPlayer ){
+  			debugger;
   			var announce = {name: this.playersIndexes[this.firstTrickPlayer], value:this.currentAnnounce.value, color:this.currentAnnounce.color}
   			if (announce.value == 0){//redistribution
   				this.currentDealer = (this.currentDealer+1)%this.nbPlayers;
@@ -277,12 +283,23 @@ function Game(id, players){
 				{msg:'', color: this.currentAnnounce.color, value: this.currentAnnounce.value, coinche: this.currentAnnounce.coinche});
 		}
 
-		io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('play', {message:'',gameID:this.gameID, cards: this.playableCards()});	
+		io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('play', {message:'from this.coinche',gameID:this.gameID, cards: this.playableCards()});	
 	}
 
 	this.play = function(name, card, callback){//callback(endTrick)
+		console.log({
+			name: name,
+			card: card,
+			should_play: this.playersIndexes[this.currentPlayer]
+		});
+		// console.log({
+		// 	dealer: {name: this.playersIndexes[this.currentDealer], id:this.currentDealer},
+		// 	firstTrickPlayer: {name: this.playersIndexes[this.firstTrickPlayer] , id:this.firstTrickPlayer},
+		// 	currentPlayer: {name: this.playersIndexes[this.currentPlayer] , id:this.currentPlayer}
+		// });
+
   		assert(this.playersIndexes.indexOf(name)!=-1);
-  		assert(this.playersIndexes.indexOf(name)===this.currentPlayer);
+  		assert(this.playersIndexes.indexOf(name)===this.currentPlayer, " player is " + name + " but should be " + this.playersIndexes[this.currentPlayer]);
 
   		assert(AUTHORIZEDCARDS.indexOf(card)!=-1, 'AUTHORIZEDCARDS.indexOf(card): ' + AUTHORIZEDCARDS.indexOf(card) +' ' + card);
   		//remove played card from hand
@@ -299,7 +316,7 @@ function Game(id, players){
 			this.endTrick();
 		} else {
 			this.currentPlayer=(this.currentPlayer+1)%this.nbPlayers;
-			io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('play', {message:'',gameID:this.gameID, cards: this.playableCards()});	
+			io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('play', {message:'from this.play',gameID:this.gameID, cards: this.playableCards()});	
 		}
 		if (callback) callback();
 	}
@@ -313,21 +330,16 @@ function Game(id, players){
 		this.scores[this.players[this.playersIndexes[winner]].team].jetee += trickValue(this.currentTrick, this.currentTrump, endJetee);
 		this.scores[0].trick = 0;
 		this.scores[1].trick = 0;
-		console.log(this.scores);
+		// console.log(this.scores);
 		if (endJetee) {
 			this.endJetee();
 		} else {
-			// console.log('end trick');
-			// console.log((this.trickWinner()+this.firstTrickPlayer)%this.nbPlayers + '-' + this.trickWinner()+ '-'+this.firstTrickPlayer+ '-' +this.nbPlayers);
 			this.currentPlayer = winner;
-			// console.log(this.playersIndexes[this.currentPlayer] +' won');
-			// console.log('THIS.FTPLAYER= ' + (this.trickWinner()+this.firstTrickPlayer)%this.nbPlayers);
 			this.currentTrickIndex++;
-			// this.currentPlayer = Math.floor((Math.random() * this.nbPlayers));//TODO EVOL: calculé quia  gagné le pli
 			this.firstTrickPlayer = this.currentPlayer;
+			io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('play', {message:'from this.endTrick',gameID:this.gameID, cards: this.playableCards()});	
 		}
 		this.currentTrick = [];
-		io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('play', {message:'',gameID:this.gameID, cards: this.playableCards()});	
 
 	}
 
@@ -340,7 +352,7 @@ function Game(id, players){
 		var winner = this.scores[this.currentAnnounce.team].jetee >= this.currentAnnounce.value?this.currentAnnounce.team:(this.currentAnnounce.team+1)%2; 
 		this.scores[this.players[this.playersIndexes[winner]].team].match = this.currentAnnounce.value;
 		var endMatch = (this.scores[0].match >=2000 || this.scores[1].match >=2000);
-		console.log(this.scores);
+		// console.log(this.scores);
 		for (pIndex in this.playersIndexes){
 			var pName = this.playersIndexes[pIndex];
 			var scoresToSend = [];
@@ -379,6 +391,8 @@ function Game(id, players){
 	}
 
 	this.playableCards = function(){
+		debugger;
+
 		// console.log('PLAYABLE CARDS...');
 		var thisPlayer = this.players[this.playersIndexes[this.currentPlayer]];
 		//IF IM FIRST TO PLAY
@@ -389,7 +403,7 @@ function Game(id, players){
 		//IF I HAVE THE COLOR
 		if (colorPlayedCards.length > 0){
 			// console.log('I HAVE THE COLOR...');
-			if (this.colorPlayed()==this.currentTrump){
+			if ((this.colorPlayed()==this.currentTrump) || this.currentTrump == 'AT'){
 				// console.log('WHICH IS TRUMP..');
 				return manageTrumps(this.currentTrick, thisPlayer.cards, this.currentTrump);
 			}
@@ -422,34 +436,46 @@ function Game(id, players){
 	}
 
 	this.partnerIsWinning = function(){ //ROBINROBINROBIN
+		// console.log({
+		// 	type: 'partnerIsWinning',
+		// 	currentPlayer: this.currentPlayer,
+		// 	trick: this.currentTrick,
+		// 	trickWinner: this.trickWinner()
+		// })
 		var len = this.currentTrick.length;
 		if (len >=2){
-			return this.trickWinner() == this.currentTrick[len-2];//TODO
+			return this.trickWinner() == len - 2;//TODO
 		}
 		return false;
 	}
 
 	this.trickWinner = function(){
-		var trump = false;
+		var defaultOrder = (this.currentTrump == 'AT'?'trumpOrder':'order');//if AT or NT, always defaultOrder
+
+		var cut = false;
 		var max = 0;
 		var winnerIndex = 0;
 		for (index in this.currentTrick){
 			var card = Cards[this.currentTrick[index]];
-			if (trump){
+
+			//j'ai la couleur ?
+			if (cut){
 				if ((card.color == this.currentTrump) && (card.trumpOrder > max)){
 					max = card.trumpOrder;
 					winnerIndex = index;
 				}
 			} else {
 				if (card.color == this.currentTrump) {
-					trump = true;
+					cut = true;
 					max = card.trumpOrder;
 					winnerIndex = index;
-				} else if ((card.color == this.colorPlayed()) && (card.order > max)){
-					max = card.order;
+				} else if ((card.color == this.colorPlayed()) && (card[defaultOrder] > max)){
+					max = card[defaultOrder];
 					winnerIndex = index;
 				}
 			}
+
+
 		}
 		res = (winnerIndex+this.firstTrickPlayer)%this.nbPlayers;
 		return parseInt(winnerIndex);

@@ -23,24 +23,7 @@ var distribute = function(cards){
 var timeToAnnounce = function(id, lastAnnonce){
   //display area and wait input
   gameID = id;
-  //undisplay COINCHE AREA
   $('#announceBoard').removeClass('hidden');
-  // $('.announceValue').removeClass('hidden');
-  // $('.announceValue').each(function(index, element){
-  //   if (parseInt($(this).attr('value')) <= lastAnnonce){
-  //     $(this).addClass('hidden');
-  //   }
-  // })
-  // var res = prompt("last Announce = " + lastAnnonce + " --> you ??");
-  // if (res){
-  //   var value = res.substr(0, res.length -1);
-  //   var color = res.substr(-1);
-  // } else {
-  //   var value = 0;
-  //   var color = '';
-  // }
-  // socket.emit('announce', {value:value, color:color, gameID:gameID});
-  //REDISPLAY COINCHE AREA
 }
         function manageAnnounceButton(elem){
           $('.'+$(elem).attr('class')).removeClass('selected');
@@ -68,7 +51,8 @@ var timeToAnnounce = function(id, lastAnnonce){
           } else {
             
           }
-
+          $('.announceValue').removeClass('selected');
+          $('.announceColor').removeClass('selected');
         }
 
 var timeToPlay = function(gameID, cards){
@@ -84,9 +68,12 @@ var timeToPlay = function(gameID, cards){
 
         socket.emit('play', {card: targetCard, gameID:gameID});
         $('#playerCards').children().css('border','').unbind('click');
+        $('#bottomPlayer .announce').text('');
         this.parentNode.removeChild(this);
     });
   });
+  $('#bottomPlayer .announce').text('Your turn');
+
   // $('#playerCards').children()//TODO que celles qui ont le droit
   //     .css('border','thin solid red')
   //     .on('click', function (event){
