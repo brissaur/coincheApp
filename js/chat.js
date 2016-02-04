@@ -169,6 +169,7 @@ socket.on('chosen_trumps', function(msg){//value, color
     });
   } else {
     displayMsg('system',' Chosen trumps: ' + msg.color);//TODO
+    $('#currentAnnounce').text(msg.value + msg.color);
   }
 
   for (pName in places){
@@ -195,6 +196,7 @@ socket.on('end_trick', function(msg){
 socket.on('end_jetee', function(msg){
   displayMsg('system',msg.message);
   updateScores(msg.scores);
+  $('#currentAnnounce').text('');
 });
 
 function updateScores(scores){

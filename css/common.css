@@ -56,7 +56,11 @@ td{
       text-align: center;
 }
 #currentAnnounce{
-
+      position: absolute;
+      color:white;
+      background-color: black;
+      padding-left: 0;
+      padding-top: 0;
 }
 /************PLAYERS**************/
 #playarea{
