@@ -49,7 +49,8 @@ $(document).keypress(function(e) {
     }
 });
 $('form').submit(function(){
-  socket.emit('chat_message', {message: $('#messageInput').val()});
+  var msg = $('#messageInput').val();
+  if (msg.trim().length > 0 ) socket.emit('chat_message', {message: msg});
   $('#messageInput').val('');
   return false;
 });
