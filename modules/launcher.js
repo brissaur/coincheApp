@@ -40,7 +40,8 @@ module.exports = function(io){
 		// <<<<<<<<<<<< Manage chat message >>>>>>>>>>>>>>
 		socket.on('chat_message', function(msg){
 			var name = socket.handshake.session.user.name;
-		    io.emit('chat_message', {name: name, message: msg.message});//TODO EVOL roadcast+print local
+			assert(users[name]);
+			if (msg.message.trim().length > 0 ) io.emit('chat_message', {name: name, message: msg.message});//TODO EVOL roadcast+print local
 	  	});
 		// <<<<<<<<<<<< Manage game invitation >>>>>>>>>>>>>>
 		socket.on('game_invitation', function(msg){
