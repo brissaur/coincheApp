@@ -322,11 +322,11 @@ function Game(id, players){
 		// console.log(this);
 		// console.log(this.currentAnnounce);
 		if (this.scores[this.currentAnnounce.team].jetee == 162) this.scores[this.currentAnnounce.team].jetee = 250;
-	var BELOTTE = false; //TODO !!
+		var BELOTTE = false; //TODO !!
 		if (BELOTTE) this.scores[this.currentAnnounce.team].jetee +=20;
 		//TODO: AJOUTER BELOTTE
 		var winner = this.scores[this.currentAnnounce.team].jetee >= this.currentAnnounce.value?this.currentAnnounce.team:(this.currentAnnounce.team+1)%2; 
-		this.scores[this.players[this.playersIndexes[winner]].team].match += this.currentAnnounce.value;
+		this.scores[this.players[this.playersIndexes[winner]].team].match += parseInt(this.currentAnnounce.value);
 		var endMatch = (this.scores[0].match >=2000 || this.scores[1].match >=2000);
 		// console.log(this.scores);
 		for (pIndex in this.playersIndexes){
