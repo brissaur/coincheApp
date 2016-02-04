@@ -7,7 +7,13 @@ body{
       background-color: blue;
       min-height: 300px;
 }
-
+button{
+      color:black;
+}
+button:hover, button.selected{
+      background-color: blue;
+      color: white;
+}
 
 /*******************************/
 /************BOARD**************/
@@ -65,6 +71,12 @@ body{
 .player span{
       display: block;
 }
+.announce {
+      border-radius: 4px;
+      background-color: lightgrey;
+      padding-right: 10px;
+      padding-left: 10px;
+}
 .player img, #playerCards img{
       height: 88px;
       width: 66px;
@@ -77,6 +89,7 @@ body{
       height: 20%;
       max-height: 200px;
       background-color: green;
+      text-align: center;
 }
 /*.announce{
       
@@ -85,12 +98,20 @@ body{
 #inviteBoard{
       position: absolute;
       top:33%;
+      background-color: grey;
+      color:white;
+      font-size: 25px;
+      text-align: center;
+      border-radius: 15px;
 }
+
 /************ANNOUNCE**************/
 #announceBoard{
       position: absolute;
       vertical-align: middle;
       top:33%;
+      background-color: grey;
+      border-radius: 15px;
 }
 /*******************************/
 /************CHAT**************/
