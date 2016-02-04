@@ -13,8 +13,6 @@ double connection 'a ' at the same time;
 /////////////////
 ///FONTIONALITIES
 /////////////////
-messages: decalage vers le haut + attente en fonction de la longueur de texte + vanish progressif puis delete
-
 affichage uniquement de ce quon peut annonce
 
 affichage connectedUsers() côté client toujours trié

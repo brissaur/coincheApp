@@ -68,12 +68,14 @@ socket.on('game_invitation', function(msg){//gameID, name,
   gameID=msg.gameID;
   $('#inviteBoard').removeClass('hidden');
   $('#inviteBoard p').text(msg.name + ' invited you for a game.');
-  $('#messages').append($('<li>').text(msg.name + ' invited you for game ' + msg.gameID));//TODO EVOL scroll down auto
+  // $('#messages').append($('<li>').text());//TODO EVOL scroll down auto
+  // displayMsg(msg);
 });
 socket.on('game_invitation_cancelled', function(msg){
   $('#inviteBoard').addClass('hidden');
   gameID=-1;
-  $('#messages').append($('<li>').text('Game was cancelled by ' + msg.name));//TODO EVOL scroll down auto
+  displayMsg('system','Game was cancelled by ' + msg.name);
+
 });
 
     function acceptInvite(){
@@ -88,19 +90,7 @@ socket.on('game_invitation_cancelled', function(msg){
     }
 // <<<<<<<<<<<< Receive chat message >>>>>>>>>>>>>>
 socket.on('chat_message', function(msg){
-  var elem = $('<li>').text(msg.name + ': ' +msg.message);
-  $('#messages').append(elem);//TODO EVOL scroll down auto
-  var initialPos = $('#chatWindow').position();
-  $('#chatWindow').css({top: initialPos.top-30});
-  $("#mydiv").css({top: 200, left: 200});
-  setTimeout(function(){
-    elem.hide(1000, function(){
-      elem.remove();
-      var initialPos = $('#chatWindow').position();
-      $('#chatWindow').css({top: initialPos.top+30});
-    });
-  }, Math.max(5000,elem.text().length*150));
-  // $('#chatWindow').animate({scrollTop: $('#chatWindow').prop(&quot;scrollHeight&quot;)}, 500);
+  displayMsg('chat', msg.name + ': ' +msg.message);
 });
 
 // socket.on('chat message', function(msg){
@@ -115,7 +105,7 @@ socket.on('chat_message', function(msg){
 // });
 // <<<<<<<<<<<< Manage new connection >>>>>>>>>>>>>>
 socket.on('connection', function(msg){
-  $('#messages').append($('<li>').text(msg.name + ' is connected.'));
+  displayMsg('system', msg.name + ' is connected.');
   $('#userList').append($('<li>').text(msg.name).append($('<input />', { type: 'checkbox', value: msg.name})));
 
   // $('#userList').append($('<li>').text(msg.name));
@@ -126,11 +116,11 @@ socket.on('connection_accepted', function(msg){
   pseudo=msg.name;
 });
 socket.on('connection_refused', function(msg){
-  $('#messages').append($('<li>').text(msg.message));
+  displayMsg('system', msg.message);
 });
 // <<<<<<<<<<<< Manage new disconnection >>>>>>>>>>>>>>
 socket.on('disconnection', function(msg){
-  $('#messages').append($('<li>').text(msg.name + ' disconnected.'));
+  displayMsg('system', msg.name + ' disconnected.');
   $('#userList').children().each(function(index, element){//TODO pb si aucun enfant;
       if($(this).text()==msg.name){
         $(this).remove();
@@ -185,7 +175,7 @@ socket.on('chosen_trumps', function(msg){//value, color
         }
     });
   } else {
-    $('#messages').append($('<li>').text(' Chosen trumps: ' + msg.color));
+    displayMsg('system',' Chosen trumps: ' + msg.color);//TODO
   }
 
   for (pName in places){
@@ -209,7 +199,7 @@ socket.on('played', function(msg){
 });
 // <<<<<<<<<<<< Manage end of a trick >>>>>>>>>>>>>>
 socket.on('end_trick', function(msg){
-  $('#messages').append($('<li>').text(msg.message));
+  displayMsg('system',msg.message);
   for(divs in places){
     $('#' + places[divs] + ' img').remove();
     // var child = document.getElementById(places[divs]).childNodes[1];
@@ -220,7 +210,7 @@ socket.on('end_trick', function(msg){
   }
 });
 socket.on('end_jetee', function(msg){
-  $('#messages').append($('<li>').text(msg.message));
+  displayMsg('system',msg.message);
   updateScores(msg.scores);
 });
 
@@ -231,4 +221,19 @@ function updateScores(scores){
   $('#scoreThemGame').text(scores[1].game);
   $('#scoreThemMatch').text(scores[1].match);
   $('#scoreThemJetee').text(scores[1].jetee);
+}
+
+function displayMsg(type, msg){
+var elem = $('<li>').text(msg);
+  $('#messages').append(elem);//TODO EVOL scroll down auto
+  var initialPos = $('#chatWindow').position();
+  $('#chatWindow').css({top: initialPos.top-30});
+  $("#mydiv").css({top: 200, left: 200});
+  setTimeout(function(){
+    elem.hide(1000, function(){
+      elem.remove();
+      var initialPos = $('#chatWindow').position();
+      $('#chatWindow').css({top: initialPos.top+30});
+    });
+  }, Math.max(5000,elem.text().length*150));
 }
