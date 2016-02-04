@@ -1,33 +1,123 @@
-* {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      /*position: relative;*/
+/*******************************/
+/************GLOBAL**************/
+/*******************************/
+body{
+      /*min-height: ;*/
+      min-width: 768px ;
+      background-color: blue;
+      min-height: 300px;
 }
-body {
-      font: 13px Helvetica, Arial;
+
+
+/*******************************/
+/************BOARD**************/
+/*******************************/
+#board{
+      position: relative;
+      background-color:green;
+      /*height: 300px;*/
+      min-height: 300px;
+      height:60%;
+      max-height: 500px;
+
 }
-form/* {
-      background: #000;
-      padding: 3px;
-      position: fixed;
-      bottom: 0;
-      width: 100%;
+#announceBoard{
+
+}
+
+/************PLAYERS**************/
+#playarea{
+      height: 200px;
+}
+.player, .player img{
+      position: absolute;
+      /*vertical-align: middle;*/
+}
+#topPlayer{
+      left:45%;
+}
+#topPlayer img{
+
+}
+#leftPlayer{
+      left:0;
+      top:45%;
+}
+#leftPlayer img{
+      left: 100px;
+      top:-30px;
+}
+#rightPlayer{
+      right:0;
+      top:45%;
+}
+#rightPlayer img{
+      right: 100px;
+      top:-30px;
+}
+#bottomPlayer{
+      bottom:0;
+      left:45%;
+}
+#bottomPlayer img{
+      bottom: 40px;
+}
+.player span{
+      display: block;
+}
+.player img, #playerCards img{
+      height: 88px;
+      width: 66px;
+      /*height: 200%;*/
+      /*width: 150%;*/
+}
+
+#playerCards{
+      min-height: 100px;
+      height: 20%;
+      max-height: 200px;
+      background-color: green;
+}
+/*.announce{
+      
 }*/
+/************INVITE**************/
+#inviteBoard{
+      position: absolute;
+      top:33%;
+}
+/************ANNOUNCE**************/
+#announceBoard{
+      position: absolute;
+      vertical-align: middle;
+      top:33%;
+}
+/*******************************/
+/************CHAT**************/
+/*******************************/
+#messageInput{
+      bottom:10px;
+      position: relative;
+      width: 100%;
+}
+
+
+/*******************************/
+/***********PLAYING BOARD*********/
+/*******************************/
+/*#board{
+      background-color:green;
+      position: absolute;
+}*/
+
+/*
 #m{
       border: 0;
-      /*padding: 10px;*/
       width: 100%;
       height: 100%;
-      /*margin-right: .5%;*/
       border: thin solid;
 }
-/*form button {
-      width: 9%;
-      background: rgb(130, 224, 255);
-      border: none;
-      padding: 10px;
-}*/
+
 #messages {
       list-style-type: none;
       margin: 0;
@@ -40,30 +130,13 @@ form/* {
       background: #eee;
 }
 #board {
-      /*position: absolute;*/
       height: 75%;
-      /*width:500px;*/
-      /*width:100%;*/
       background-color:green;
       right:0px;
       border: thin solid;
 }
 .player {
-      /*position: relative;*/
       text-align: center;
-}
-#topPlayer {
-      /*text-align:center;*/
-}
-#leftPlayer {
-      /*left:0;*/
-}
-#rightPlayer {
-      /*right:0;*/
-      /*padding-left:404px;*/
-}
-#bottomPlayer {
-      /*text-align:center;*/
 }
 .card {
       width:80%;
@@ -80,13 +153,11 @@ form/* {
       text-align: center;
       padding-left: 100px;
 }
-/*MESSAGE AREA*/
 #chatWindow{
       border: thin solid;
       text-align: center;
       height: 20%;
 }
-/*USER AREA*/
 #usersArea{
       border: thin solid;
       text-align: center;
@@ -115,7 +186,6 @@ button{
       padding:3px;
 }
 button:hover, button.selected{
-      /*color: green;*/
 
       background-color: blue;
       color: white;
@@ -129,12 +199,9 @@ button:hover, button.selected{
       font-size: 25px;
 }
 #announceBoard{
-      /*display: absolute;*/
       position: absolute;
       top:50px;
-      /*width: 300px;*/
       text-align: center;
-      /*border: thin solid;*/
       background-color: lightblue;
 }
 .value, .color{
@@ -146,19 +213,9 @@ button:hover, button.selected{
       padding: 5px;
       margin-right: 10px;
 }
-#announceBoard div label:select{
-/*      background-color: blue;
-color: white;
-
-.test{
-      display:inline-block;
-      color:green;
-      /*font-size: 25px;*/
-}
 #a80, #a90{
       display:inline-block;
       color:green;
-      /*font-size: 25px;*/
 }
 
 table td{
@@ -169,5 +226,5 @@ table td{
 .announce{
       background-color: grey;
       color:white;
-      
-}
+
+}*/

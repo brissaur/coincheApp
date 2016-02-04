@@ -26,7 +26,6 @@ var shiftLeft=0;
 
 
 
-
 $.get('/connectedUsers',function(data){
     data.forEach(function(user){
       $('#userList').append($('<li>').text(user).append($('<input />', { type: 'checkbox', value: user})));
@@ -37,9 +36,21 @@ $.get('/connectedUsers',function(data){
 });
 
 // <<<<<<<<<<<< Send chat message >>>>>>>>>>>>>>
+$(document).keypress(function(e) {
+    var elem = $('#messageForm')
+    if(e.which == 13) {//if it is enter;
+      if (elem.hasClass('hidden')){
+        e.preventDefault();
+        elem.removeClass('hidden');
+        $('#messageInput').focus();
+      } else {
+        elem.addClass('hidden');
+      }
+    }
+});
 $('form').submit(function(){
-  socket.emit('chat_message', {message: $('#m').val()});
-  $('#m').val('');
+  socket.emit('chat_message', {message: $('#messageInput').val()});
+  $('#messageInput').val('');
   return false;
 });
 function invitePlayers(){

@@ -4,88 +4,74 @@ block css
 block content
 	.container-fluid
 		.row
-			#board.col-xs-10
-				.col-xs-6.col-xs-offset-3#inviteBoard.hidden
-					p zafefez
-					button(type='button', value='acceptInvite', onclick='acceptInvite();') Accept
-					button(type='button', value='refuseInvite', onclick='refuseInvite();') Refuse
-				.col-xs-6.col-xs-offset-3#announceBoard.hidden
-					.row.value
-						.col-xs-2: button.announceValue(type='button', value='80', onclick='manageAnnounceButton(this);') 80
-						.col-xs-2: button.announceValue(type='button', value='90', onclick='manageAnnounceButton(this);') 90
-						.col-xs-2: button.announceValue(type='button', value='100', onclick='manageAnnounceButton(this);') 100
-						.col-xs-2: button.announceValue(type='button', value='110', onclick='manageAnnounceButton(this);') 110
-						.col-xs-2: button.announceValue(type='button', value='120', onclick='manageAnnounceButton(this);') 120
-						.col-xs-2: button.announceValue(type='button', value='130', onclick='manageAnnounceButton(this);') 130
-						.col-xs-2: button.announceValue(type='button', value='140', onclick='manageAnnounceButton(this);') 140
-						.col-xs-2: button.announceValue(type='button', value='150', onclick='manageAnnounceButton(this);') 150
-						.col-xs-2: button.announceValue(type='button', value='160', onclick='manageAnnounceButton(this);') 160
-						.col-xs-2: button.announceValue(type='button', value='170', onclick='manageAnnounceButton(this);') 170
-						.col-xs-2: button.announceValue(type='button', value='250', onclick='manageAnnounceButton(this);') 250
-						.col-xs-2: button.announceValue(type='button', value='270', onclick='manageAnnounceButton(this);') 270
-					.row.color
-						.col-xs-2: button.announceColor(type='button', value='H', onclick='manageAnnounceButton(this);', style='color:red') &#9829
-						.col-xs-2: button.announceColor(type='button', value='S', onclick='manageAnnounceButton(this);', style='color:black') &#9824
-						.col-xs-2: button.announceColor(type='button', value='D', onclick='manageAnnounceButton(this);', style='color:red') &#9830
-						.col-xs-2: button.announceColor(type='button', value='C', onclick='manageAnnounceButton(this);', style='color:black') &#9827
-						.col-xs-2: button.announceColor(type='button', value='NT', onclick='manageAnnounceButton(this);', style='color:black') NT
-						.col-xs-2: button.announceColor(type='button', value='AT', onclick='manageAnnounceButton(this);', style='color:black') AT
-					.row.validation
-						.col-xs-4: button(type='button', value='Announce', onclick='sendAnnounce(this);') Announce
-						.col-xs-4: button(type='button', value='Pass', onclick='sendAnnounce(this);') Pass
-						.col-xs-4: button(type='button', value='Coinche', onclick='sendAnnounce(this);') Coinche
-				#playarea
-					.row.line
-						.col-xs-2.col-xs-offset-5.player#topPlayer
-								span.playerName
-								span.announce
-						.col-xs-2.col-xs-offset-3#scores
-							table
-								tr
-									th Us
-									th Them	
-								tr
-									td#scoreUsGame 0
-									td#scoreThemGame 0
-								tr
-									td#scoreUsMatch 0
-									td#scoreThemMatch 0
-								tr
-									td#scoreUsJetee 0
-									td#scoreThemJetee 0
-					.row.line
-						.col-xs-2.player#leftPlayer
-								span.playerName
-								span.announce
-						.col-xs-2.col-xs-offset-8.player#rightPlayer
-								span.playerName
-								span.announce
-					.row.line
-						.col-xs-2.col-xs-offset-5.player#bottomPlayer
-								span.playerName
-								span.announce
+			.col-xs-10
 				.row
-					.col-xs-12
-						div#playerCards
+					#board
+						.col-xs-6.col-xs-offset-3#inviteBoard.hidden
+							p A player invited you for a Game.
+							button(type='button', value='acceptInvite', onclick='acceptInvite();') Accept
+							button(type='button', value='refuseInvite', onclick='refuseInvite();') Refuse
+						.col-xs-6.col-xs-offset-3#announceBoard.hidden
+							.row.value
+								.col-xs-2: button.announceValue(type='button', value='80', onclick='manageAnnounceButton(this);') 80
+								.col-xs-2: button.announceValue(type='button', value='90', onclick='manageAnnounceButton(this);') 90
+								.col-xs-2: button.announceValue(type='button', value='100', onclick='manageAnnounceButton(this);') 100
+								.col-xs-2: button.announceValue(type='button', value='110', onclick='manageAnnounceButton(this);') 110
+								.col-xs-2: button.announceValue(type='button', value='120', onclick='manageAnnounceButton(this);') 120
+								.col-xs-2: button.announceValue(type='button', value='130', onclick='manageAnnounceButton(this);') 130
+								.col-xs-2: button.announceValue(type='button', value='140', onclick='manageAnnounceButton(this);') 140
+								.col-xs-2: button.announceValue(type='button', value='150', onclick='manageAnnounceButton(this);') 150
+								.col-xs-2: button.announceValue(type='button', value='160', onclick='manageAnnounceButton(this);') 160
+								.col-xs-2: button.announceValue(type='button', value='170', onclick='manageAnnounceButton(this);') 170
+								.col-xs-2: button.announceValue(type='button', value='250', onclick='manageAnnounceButton(this);') 250
+								.col-xs-2: button.announceValue(type='button', value='270', onclick='manageAnnounceButton(this);') 270
+							.row.color
+								.col-xs-2: button.announceColor(type='button', value='H', onclick='manageAnnounceButton(this);', style='color:red') &#9829
+								.col-xs-2: button.announceColor(type='button', value='S', onclick='manageAnnounceButton(this);', style='color:black') &#9824
+								.col-xs-2: button.announceColor(type='button', value='D', onclick='manageAnnounceButton(this);', style='color:red') &#9830
+								.col-xs-2: button.announceColor(type='button', value='C', onclick='manageAnnounceButton(this);', style='color:black') &#9827
+								.col-xs-2: button.announceColor(type='button', value='NT', onclick='manageAnnounceButton(this);', style='color:black') NT
+								.col-xs-2: button.announceColor(type='button', value='AT', onclick='manageAnnounceButton(this);', style='color:black') AT
+							.row.validation
+								.col-xs-4: button(type='button', value='Announce', onclick='sendAnnounce(this);') Announce
+								.col-xs-4: button(type='button', value='Pass', onclick='sendAnnounce(this);') Pass
+								.col-xs-4: button(type='button', value='Coinche', onclick='sendAnnounce(this);') Coinche
+						#playarea
+							.player#topPlayer
+								span.playerName
+								span.announce
+								//- img(src="/images/cards/10C.png")
+							.player#rightPlayer
+								span.playerName
+								span.announce
+								//- img(src="/images/cards/10C.png")
+							.player#leftPlayer
+								span.playerName
+								span.announce
+								//- img(src="/images/cards/10C.png")
+							.player#bottomPlayer
+								span.playerName
+								span.announce
+								//- img(src="/images/cards/10C.png")
+				.row
+					#playerCards
+						//- img(src="/images/cards/10C.png")
+
+			
 			.col-xs-2#usersArea
 				label Coupaings
 					a(href='/logout',style="display:block;") Disconnect #{session.user.name}
 				//- form(action='/testa', method='post')
 				ul#userList
 				button(onclick='invitePlayers();', style='margin-bottom:100px') Invite
-					//- button(type='submit') Invite
-					//- button(onclick='invitePlayers();', style='margin-bottom:100px') Invite
-					
-				//- ul
-		.row
-			.col-xs-12#chatWindow
+		#chatWindow 
 				//- label Messages
 				ul#messages
-		.row
-			.col-xs-12#messageForm
-				form(action='')
-					input#m(autocomplete='off')
-					button.hidden Send
+		//- .row
+		#messageForm.hidden
+			form(action='')
+				input#messageInput(autocomplete='off')
+				button.hidden Send
 block scripts
 	script(src='/node_modules/socket.io-client/socket.io.js')
 	script(src='/js/chat.js')

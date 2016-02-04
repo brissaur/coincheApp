@@ -1,37 +1,40 @@
-
-peggie
-cedric guilherm
 meuf du CE
-herve
-carrier
+herve jeudi matin
 chloe lettre motiv
 _____________________________________________________
+________ Intégartion 
 _____________________________________________________
-BUGGS
+/////////////////
+/////BUGGS
+/////////////////
 jeu de carte en non absolu
 pb du register
 double connection 'a ' at the same time;
+/////////////////
+///FONTIONALITIES
+/////////////////
+messages: decalage vers le haut + attente en fonction de la longueur de texte + vanish progressif puis delete
 
-FONTIONALITIES
-tri user coté client lors dune connection 
+affichage uniquement de ce quon peut annonce
+
+affichage connectedUsers() côté client toujours trié
+affichage du status (in game/not in game) dans cette meme liste
+sécurise nouvel invite game: impossible si un joueur déja en game
 
 choisir les équipes au départ
 
-bloquer nouvel invite game lors d'une game
 ajouter points belote
 
-reconnection a une game
+changer comptage de points : pointfait + annoncé
+
+reconnection a une game si déco
+
 display annonce popre '80H' -> '80 &hearts'
 
-le scroll message
-client : trier alphabetique nom users
-_____________________________________________________
-_____________________________________________________
+le scroll message pour le chat
 
+deck : reproduire le 'mélange' = ne pas random mais remettre les carte dans l ordre des plis et random la coupe en pondéré;
 
+passer en https
 
-systeme d'invit avec selection
-
-/////////////////////////////////////////////////////////////
-display du jeu joueur & selection des cartes
-fin des 8 jetees et nouvelle jetee
+mettre un vrai systeme de login
