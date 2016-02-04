@@ -13,6 +13,14 @@ double connection 'a ' at the same time;
 /////////////////
 ///FONTIONALITIES
 /////////////////
+ajout un bouton 'dealer' au dealer
+
+la coinche: enable a la volee, emepcher si pas d annonce avant
+
+afficher les cartes moitié l'une sur l'autre
+
+affichage de l atout #currentAnnounce
+
 affichage uniquement de ce quon peut annonce
 
 affichage connectedUsers() côté client toujours trié
@@ -36,3 +44,5 @@ deck : reproduire le 'mélange' = ne pas random mais remettre les carte dans l o
 passer en https
 
 mettre un vrai systeme de login
+
+rajouter un système de room ? (bonus)

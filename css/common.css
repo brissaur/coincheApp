@@ -30,7 +30,34 @@ button:hover, button.selected{
 #announceBoard{
 
 }
+/************SCORES**************/
+#scores{
+      position: absolute;
+      top:0;
+      right:0;
+      margin-top: 10px;
+      margin-right: 10px;
+}
+tr, td, th{
+      border: solid thin;
+}
+td:first-child{
+      text-align: right;
+      font-weight: bold;
+      width: 110px;
+      /*color: blue;*/
+}
+th{
+      font-weight: bold;
+      text-align: center;
+}
+td{
+      width: 50px;
+      text-align: center;
+}
+#currentAnnounce{
 
+}
 /************PLAYERS**************/
 #playarea{
       height: 200px;
@@ -83,7 +110,12 @@ button:hover, button.selected{
       /*height: 200%;*/
       /*width: 150%;*/
 }
-
+.dealer{
+      color: white;
+      background-color: red;
+      border-radius: 10px;
+      text-align: center;
+}
 #playerCards{
       min-height: 100px;
       height: 20%;
@@ -133,7 +165,7 @@ button:hover, button.selected{
 }
 
 /*******************************/
-/***********USERS*********/
+/**************USERS************/
 /*******************************/
 #usersArea{
       text-align: center;
@@ -141,59 +173,3 @@ button:hover, button.selected{
 #userList li{
       list-style: none;
 }
-#messageForm{
-      height: 5%;
-}
-.line{
-      height: 80px;
-      width: 100%;
-}
-
-button{
-      font-size: 20px;
-      margin-right: 10px;
-      padding:3px;
-}
-button:hover, button.selected{
-
-      background-color: blue;
-      color: white;
-}
-#inviteBoard {
-      background-color: grey;
-
-      border: thin solid;
-}
-#inviteBoard p{
-      font-size: 25px;
-}
-#announceBoard{
-      position: absolute;
-      top:50px;
-      text-align: center;
-      background-color: lightblue;
-}
-.value, .color{
-      margin-bottom: 10px;
-}
-#announceBoard div label{
-      font-size: 16px;
-      background-color: grey;
-      padding: 5px;
-      margin-right: 10px;
-}
-#a80, #a90{
-      display:inline-block;
-      color:green;
-}
-
-table td{
-      border: thin solid;
-      margin:2px;
-}
-
-.announce{
-      background-color: grey;
-      color:white;
-
-}*/

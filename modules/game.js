@@ -75,7 +75,7 @@ function accept(inviteID, player){
 					var pName = game.playersIndexes[pIndex];
 					console.log['pName : ==> ' + pName];
 					io.to(users[pName].socket).emit('initialize_game', 
-						{msg:'', players: game.playersIndexes, dealer: game.currentDealer});
+						{msg:'', players: game.playersIndexes, dealer: game.playersIndexes[game.currentDealer]});
 				}
 				game.nextJetee();
 			}
@@ -172,7 +172,7 @@ function Game(id, players){
 		for (pIndex in this.playersIndexes){
 			var pName = this.playersIndexes[pIndex];
 			io.to(users[pName].socket).emit('distribution', 
-				{msg:'', cards: this.players[pName].cards});
+				{msg:'', cards: this.players[pName].cards, dealer: this.playersIndexes[this.currentDealer]});
 		}
 
 		io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('announce', {gameID:this.gameID, lastAnnounce:0, msg:''});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler

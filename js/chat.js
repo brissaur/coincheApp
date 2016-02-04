@@ -1,22 +1,16 @@
 // ==============================================================
 // ================== GLOBAL VARS ===============================
 // ==============================================================
- // $('<input />', ).appendTo(container);
-
 var socket = io();
-var dealer;
-// var players = [];
 var positions = ['bottomPlayer', 'leftPlayer', 'topPlayer', 'rightPlayer'];
 var places = {};
 var cards = [];
 var pseudo = '';
 var gameID = -1;
-// <<<<<<<<<<<< Mise en forme du jeu du joueur >>>>>>>>>>>>>>
 var zindex=10;
 var shiftLeft=0;
 
   for (var i = 0; i < 8; i++) {
-    // console.log('card'+i);
     c=$('#card'+i);
     c.css('z-index', zindex);
     c.css('left', shiftLeft+100);
@@ -29,9 +23,6 @@ var shiftLeft=0;
 $.get('/connectedUsers',function(data){
     data.forEach(function(user){
       $('#userList').append($('<li>').text(user).append($('<input />', { type: 'checkbox', value: user})));
-      //.attr('checked', false);//TODO
- // $('#userList').append($('<input />', { type: 'checkbox', value: 'robiiin' , text: 'test'}).text('aefz'));
-
     })
 });
 
@@ -150,17 +141,17 @@ socket.on('coinche', function(msg){
 
 // <<<<<<<<<<<< Manage game initialization >>>>>>>>>>>>>>
 socket.on('initialize_game', function(msg){//cards, players, dealer
-  // var dealer = msg.dealer;//TODO button
-  // debugger;
   var myIndex = msg.players.indexOf(pseudo);
-  // $('#messages').append($('<li>').text('Starting Game...' + cards));
   for (var i = 0; i <msg.players.length; i++) {
     var playername = msg.players[(i+myIndex)%msg.players.length];
     places[playername]=positions[i];
-    // console.log('places['+playername+']='+places[playername]);
-    // document.getElementById(positions[i]).childNodes[0].innerHTML=playername;
     $('#'+ places[playername] + ' .playerName').text(playername)
   };
+  console.log({
+    place:places[msg.dealer],
+    dealer: msg.dealer
+  })
+  $('#' + places[msg.dealer]).append($('<span>').text('D').addClass('dealer'));
 });
 socket.on('distribution', function(msg){//cards, players, dealer
   distribute(msg.cards);
@@ -191,23 +182,13 @@ socket.on('played', function(msg){
   var c = document.createElement('img');
     c.src='/images/cards/'+msg.card+'.png';
     c.className = "card";
-  //   c.style['z-index']=zindex
-  //   c.style.left=shiftLeft+100;//('left', shiftLeft+100);
-  //   zindex*=10;
-  //   shiftLeft+=30;
     targetCard.appendChild(c);
-  // .childNodes[0].src='/images/cards/'+msg.card+'.png';
 });
 // <<<<<<<<<<<< Manage end of a trick >>>>>>>>>>>>>>
 socket.on('end_trick', function(msg){
   displayMsg('system',msg.message);
   for(divs in places){
     $('#' + places[divs] + ' img').remove();
-    // var child = document.getElementById(places[divs]).childNodes[1];
-    // if (child){
-    //   child.parentNode.removeChild(child);
-    // }
-    // document.getElementById(places[divs]).childNodes[0].src='';
   }
 });
 socket.on('end_jetee', function(msg){

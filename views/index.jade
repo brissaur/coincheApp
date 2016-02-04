@@ -36,6 +36,25 @@ block content
 								.col-xs-4: button(type='button', value='Announce', onclick='sendAnnounce(this);') Announce
 								.col-xs-4: button(type='button', value='Pass', onclick='sendAnnounce(this);') Pass
 								.col-xs-4: button(type='button', value='Coinche', onclick='sendAnnounce(this);') Coinche
+						span#currentAnnounce
+						#scores
+							table
+								tr
+									th
+									th Us
+									th Them	
+								tr
+									td Global Scores
+									td#scoreUsGame 0
+									td#scoreThemGame 0
+								tr
+									td Current Match
+									td#scoreUsMatch 0
+									td#scoreThemMatch 0
+								tr
+									td Last Jetee
+									td#scoreUsJetee 0
+									td#scoreThemJetee 0
 						#playarea
 							.player#topPlayer
 								span.playerName
