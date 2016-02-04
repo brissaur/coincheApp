@@ -88,7 +88,18 @@ socket.on('game_invitation_cancelled', function(msg){
     }
 // <<<<<<<<<<<< Receive chat message >>>>>>>>>>>>>>
 socket.on('chat_message', function(msg){
-  $('#messages').append($('<li>').text(msg.name + ': ' +msg.message));//TODO EVOL scroll down auto
+  var elem = $('<li>').text(msg.name + ': ' +msg.message);
+  $('#messages').append(elem);//TODO EVOL scroll down auto
+  var initialPos = $('#chatWindow').position();
+  $('#chatWindow').css({top: initialPos.top-30});
+  $("#mydiv").css({top: 200, left: 200});
+  setTimeout(function(){
+    elem.hide(1000, function(){
+      elem.remove();
+      var initialPos = $('#chatWindow').position();
+      $('#chatWindow').css({top: initialPos.top+30});
+    });
+  }, Math.max(5000,elem.text().length*150));
   // $('#chatWindow').animate({scrollTop: $('#chatWindow').prop(&quot;scrollHeight&quot;)}, 500);
 });
 

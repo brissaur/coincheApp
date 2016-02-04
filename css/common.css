@@ -100,6 +100,13 @@ body{
       position: relative;
       width: 100%;
 }
+#chatWindow{
+      position: absolute;
+}
+#chatWindow * {
+      font-size: 25px;
+      color: red;
+}
 
 
 /*******************************/
@@ -169,15 +176,9 @@ body{
 #messageForm{
       height: 5%;
 }
-.hidden{
-      display: none;
-}
 .line{
       height: 80px;
       width: 100%;
-}
-.hidden{
-      display:none;
 }
 
 button{
