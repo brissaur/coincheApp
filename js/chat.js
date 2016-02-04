@@ -5,6 +5,7 @@ var socket = io();
 var positions = ['bottomPlayer', 'leftPlayer', 'topPlayer', 'rightPlayer'];
 var places = {};
 var cards = [];
+var dealer;
 var pseudo = '';
 var gameID = -1;
 var zindex=10;
@@ -147,15 +148,15 @@ socket.on('initialize_game', function(msg){//cards, players, dealer
     places[playername]=positions[i];
     $('#'+ places[playername] + ' .playerName').text(playername)
   };
-  console.log({
-    place:places[msg.dealer],
-    dealer: msg.dealer
-  })
+  dealer = msg.dealer;
   $('#' + places[msg.dealer]).append($('<span>').text('D').addClass('dealer'));
 });
 socket.on('distribution', function(msg){//cards, players, dealer
   distribute(msg.cards);
   console.log('distribution: ' + msg.cards);
+  $('#' + places[dealer] + ' .dealer').remove();
+  dealer = msg.dealer;
+  $('#' + places[msg.dealer]).append($('<span>').text('D').addClass('dealer'));
   // display COINCHER area
 });
 socket.on('chosen_trumps', function(msg){//value, color
