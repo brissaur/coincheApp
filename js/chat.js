@@ -124,7 +124,7 @@ socket.on('play', function(msg){
 
 socket.on('announce', function(msg){
       // alert('announce');
-      timeToAnnounce(msg.lastAnnounce);
+      timeToAnnounce(msg.winningAnnounce);
       console.log('announce : ' + msg.msg);
 });
 

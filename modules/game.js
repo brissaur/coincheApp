@@ -175,7 +175,7 @@ function Game(id, players){
 				{msg:'', cards: this.players[pName].cards, dealer: this.playersIndexes[this.currentDealer]});
 		}
 
-		io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('announce', {gameID:this.gameID, lastAnnounce:{}, msg:''});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
+		io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('announce', { winningAnnounce:{value:0}, msg:''});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
 		
 		if (callback) callback();
 	}
@@ -207,7 +207,7 @@ function Game(id, players){
   			}
 	  		var winningAnnounce = {value: this.currentAnnounce.value, color:this.currentAnnounce.color , playerName: this.currentAnnounce.playerName};
 	  		console.log(winningAnnounce);
-			io.emit('announced', {gameID:this.gameID, winningAnnounce: winningAnnounce, value:value, color:color, msg:'', name:name});
+			io.emit('announced', { winningAnnounce: winningAnnounce, value:value, color:color, msg:'', name:name});
   			this.firstTrickPlayer = (this.currentDealer+1)%this.nbPlayers;
   			this.currentPlayer = this.firstTrickPlayer;
 			
@@ -221,7 +221,7 @@ function Game(id, players){
 								this.nextJetee();
 							} else {
 								// console.log('finalAnnounce lets play');
-								io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('play', {message:'',gameID:this.gameID, cards: this.playableCards()});	
+								io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('play', {message:'', cards: this.playableCards()});	
 							}
 			// console.log(this);
 			return callback?callback():1;
@@ -238,13 +238,13 @@ function Game(id, players){
 
   		var winningAnnounce = {value: this.currentAnnounce.value, color:this.currentAnnounce.color , playerName: this.currentAnnounce.playerName};
   		console.log(winningAnnounce);
-		io.emit('announced', {gameID:this.gameID, winningAnnounce: winningAnnounce, value:value, color:color, msg:'', name:name});
-			
+		io.emit('announced', { winningAnnounce: winningAnnounce, value:value, color:color, msg:'', name:name});
+
   		// PLAYE DID PASS BUT NOT EVERYONE TALKED
   		this.currentPlayer=(this.currentPlayer+1)%this.nbPlayers;
 		// console.log('next annonce');
-		io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('announce', {gameID:this.gameID, lastAnnounce:(this.currentAnnounce.value), msg:'next announce'});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
-		
+		io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('announce', { winningAnnounce:winningAnnounce, msg:'next announce'});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
+
 		if (callback) callback();
 
 	}
@@ -263,7 +263,7 @@ function Game(id, players){
 				{msg:'', color: this.currentAnnounce.color, value: this.currentAnnounce.value, coinche: this.currentAnnounce.coinche});
 		}
 
-		io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('play', {message:'from this.coinche',gameID:this.gameID, cards: this.playableCards()});	
+		io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('play', {message:'from this.coinche', cards: this.playableCards()});	
 	}
 
 	this.play = function(name, card, callback){//callback(endTrick)
@@ -285,7 +285,7 @@ function Game(id, players){
 			this.endTrick();
 		} else {
 			this.currentPlayer=(this.currentPlayer+1)%this.nbPlayers;
-			io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('play', {message:'from this.play',gameID:this.gameID, cards: this.playableCards()});	
+			io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('play', {message:'from this.play', cards: this.playableCards()});	
 		}
 		if (callback) callback();
 	}
@@ -312,7 +312,7 @@ function Game(id, players){
 			this.currentPlayer = winner;
 			this.currentTrickIndex++;
 			this.firstTrickPlayer = this.currentPlayer;
-			io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('play', {message:'from this.endTrick',gameID:this.gameID, cards: this.playableCards()});	
+			io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('play', {message:'from this.endTrick', cards: this.playableCards()});	
 		}
 
 	}
