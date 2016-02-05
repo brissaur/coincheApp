@@ -53,27 +53,26 @@ module.exports = function(io){
 			var name = socket.handshake.session.user.name;
 		    assert(users[name]);
 		    assert(users[name].game);
-		    assert(users[name].game.gameID==msg.gameID);
 
-			Games.accept(msg.gameID, name);
+			Games.accept(users[name].game.gameID, name);
 	  	});
 		socket.on('game_invitation_refused', function(msg){
 			var name = socket.handshake.session.user.name;
-		    Games.refuse(msg.gameID, name);
+		    Games.refuse(users[name].game.gameID, name);
 	  	});
 
 		// <<<<<<<<<<<< Manage a player annonce >>>>>>>>>>>>>>
 	  	socket.on('announce', function(msg){//.card + .player + .firstPlayer
 			var name = socket.handshake.session.user.name;
 	  		assert(users[name]);
-	  		var thisGame = Games.game(msg.gameID);
+	  		var thisGame = Games.game(users[name].game.gameID);
 	  		thisGame.announce(name, msg.value,msg.color);
 	  	});
 	  	socket.on('coinche', function(msg){//.card + .player + .firstPlayer
 			var name = socket.handshake.session.user.name;
 	  		assert(users[name]);
 	  		console.log({type: 'coinche', name: name});
-	  		var thisGame = Games.game(msg.gameID);
+	  		var thisGame = Games.game(users[name].game.gameID);
 	  		thisGame.coinche(name);
 	  	});
 	  	
@@ -81,7 +80,7 @@ module.exports = function(io){
 	  	socket.on('play', function(msg){//.card + .player + .firstPlayer
 			var name = socket.handshake.session.user.name;
 	  		assert(users[name]);
-	  		var thisGame = Games.game(msg.gameID);
+	  		var thisGame = Games.game(users[name].game.gameID);
 	  		thisGame.play(name, msg.card);
 	  	});
 	});

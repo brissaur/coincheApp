@@ -1,5 +1,6 @@
 var testcards = ['9H','8S','JC','10H','JH','QH','KH','AH'];
 var gameID = -1;
+var greatestAnnounce = 0;
 var distribute = function(cards){
   // assert(cards.length==8);
   var zindex=10;
@@ -23,9 +24,11 @@ var distribute = function(cards){
 var timeToAnnounce = function(id, lastAnnonce){
   //display area and wait input
   gameID = id;
+  greatestAnnounce = lastAnnonce;
   $('.announceValue').each(function(index, element){
       if(parseInt($(element).attr('value'))<=parseInt(lastAnnonce)) $(element).addClass('hidden');
   })
+  $('#bottomPlayer button').remove();
   $('#announceBoard').removeClass('hidden');
 }
         function manageAnnounceButton(elem){
@@ -42,15 +45,18 @@ var timeToAnnounce = function(id, lastAnnonce){
               socket.emit('announce', {value:value, color:color, gameID:gameID});
               $('#announceBoard').addClass('hidden');
               gameID = -1;
+              greatestAnnounce = 0;
             }
           } else if (announceType == 'Pass'){
               socket.emit('announce', {value:0, color:'', gameID:gameID});
               $('#announceBoard').addClass('hidden');
               gameID = -1;
+              greatestAnnounce = 0;
           } else if (announceType == 'Coinche'){
-              socket.emit('coinche', {gameID:gameID});
-              $('#announceBoard').addClass('hidden');
-              gameID = -1;
+            if (greatestAnnounce != 0){
+                coinche();
+                $('#announceBoard').addClass('hidden');
+            }
           } else {
             
           }
@@ -59,6 +65,12 @@ var timeToAnnounce = function(id, lastAnnonce){
           $('.announceValue').removeClass('hidden');
         }
 
+        function coinche(){
+          socket.emit('coinche', {gameID:gameID});
+          $('#bottomPlayer button').remove();
+          gameID = -1;
+          greatestAnnounce = 0;
+        }
 var timeToPlay = function(gameID, cards){
   // $('#messages').append($('<li>').text('I can play...' + cards));
   cards.forEach(function(card){

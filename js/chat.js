@@ -135,9 +135,21 @@ socket.on('announce', function(msg){
 
 socket.on('announced', function(msg){
   $('#'+ places[msg.name] + ' .announce').text(' ' + (msg.value==0?'Pass':msg.value + msg.color));
+  console.log(msg.winningAnnounce);
+  if (msg.winningAnnounce.value == 0){
+    //nothing
+  } else if (places[msg.winningAnnounce.playerName] == 'topPlayer' || places[msg.winningAnnounce.playerName] == 'bottomPlayer'){
+    $('#bottomPlayer button').remove();
+  } else { // si ils gagnent l'annonce actuelle
+    if ($('#bottomPlayer button').length == 0){
+      var coincheButton = $('<button>').attr('onClick', 'coinche()').text('coinche');
+      $('#bottomPlayer').append(coincheButton);
+    }
+  }
 });
 socket.on('coinche', function(msg){
-  $('#'+ places[msg.name] + ' .announce').text('Coinched!');
+  $('#'+ places[msg.name] + ' .announce').text('Coinched!');//TODO: animate ...
+  if(!$('#announceBoard').hasClass('hidden')) $('#announceBoard').addClass('hidden');
 });
 
 // <<<<<<<<<<<< Manage game initialization >>>>>>>>>>>>>>
@@ -175,6 +187,7 @@ socket.on('chosen_trumps', function(msg){//value, color
   for (pName in places){
     $('#'+ places[pName] + ' .announce').text('');
   }
+  $('#bottomPlayer button').remove();
 });
 // <<<<<<<<<<<< Manage a player played >>>>>>>>>>>>>>
 socket.on('played', function(msg){
@@ -222,3 +235,4 @@ var elem = $('<li>').text(msg);
     });
   }, Math.max(5000,elem.text().length*150));
 }
+

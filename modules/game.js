@@ -69,8 +69,8 @@ function accept(inviteID, player){
 	if (readyToStart(inviteID)){
 		clearTimeout(invites[inviteID].timeoutFunction);
 				var game = init(inviteID);
-				console.log(users);
-				console.log(game.playersIndexes);
+				// console.log(users);
+				// console.log(game.playersIndexes);
 				for (pIndex in game.playersIndexes){
 					var pName = game.playersIndexes[pIndex];
 					console.log['pName : ==> ' + pName];
@@ -175,7 +175,7 @@ function Game(id, players){
 				{msg:'', cards: this.players[pName].cards, dealer: this.playersIndexes[this.currentDealer]});
 		}
 
-		io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('announce', {gameID:this.gameID, lastAnnounce:0, msg:''});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
+		io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('announce', {gameID:this.gameID, lastAnnounce:{}, msg:''});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
 		
 		if (callback) callback();
 	}
@@ -197,17 +197,17 @@ function Game(id, players){
 
   		assert((parseInt(value) > parseInt(this.currentAnnounce.value)) || value == 0, 'new announce not greater or pass ' + value + ' !> ' + this.currentAnnounce.value);
 
-		io.emit('announced', {gameID:this.gameID, value:value, color:color, msg:'', name:name});
-
   		// END OF ANNOUNCE 
   		if (value == 0 && ((this.currentPlayer+1)%this.nbPlayers)==this.firstTrickPlayer ){
-  			debugger;
   			var announce = {name: this.playersIndexes[this.firstTrickPlayer], value:this.currentAnnounce.value, color:this.currentAnnounce.color}
   			if (announce.value == 0){//redistribution
   				this.currentDealer = (this.currentDealer+1)%this.nbPlayers;
   			} else {
 	  			this.currentTrump = this.currentAnnounce.color;
   			}
+	  		var winningAnnounce = {value: this.currentAnnounce.value, color:this.currentAnnounce.color , playerName: this.currentAnnounce.playerName};
+	  		console.log(winningAnnounce);
+			io.emit('announced', {gameID:this.gameID, winningAnnounce: winningAnnounce, value:value, color:color, msg:'', name:name});
   			this.firstTrickPlayer = (this.currentDealer+1)%this.nbPlayers;
   			this.currentPlayer = this.firstTrickPlayer;
 			
@@ -233,13 +233,18 @@ function Game(id, players){
   			this.currentAnnounce.value = value;
   			this.currentAnnounce.color = color;
   			this.currentAnnounce.team = this.players[name].team;
+  			this.currentAnnounce.playerName = name;
   		}
 
+  		var winningAnnounce = {value: this.currentAnnounce.value, color:this.currentAnnounce.color , playerName: this.currentAnnounce.playerName};
+  		console.log(winningAnnounce);
+		io.emit('announced', {gameID:this.gameID, winningAnnounce: winningAnnounce, value:value, color:color, msg:'', name:name});
+			
   		// PLAYE DID PASS BUT NOT EVERYONE TALKED
   		this.currentPlayer=(this.currentPlayer+1)%this.nbPlayers;
 		// console.log('next annonce');
 		io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('announce', {gameID:this.gameID, lastAnnounce:(this.currentAnnounce.value), msg:'next announce'});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
-
+		
 		if (callback) callback();
 
 	}
