@@ -192,11 +192,6 @@ function Game(id, players){
 // ==============================================================
 //When a player plays a card
 	this.announce = function(name, value, color, callback){
-		// console.log({
-		// 	dealer: {name: this.playersIndexes[this.currentDealer], id:this.currentDealer},
-		// 	firstTrickPlayer: {name: this.playersIndexes[this.firstTrickPlayer] , id:this.firstTrickPlayer},
-		// 	currentPlayer: {name: this.playersIndexes[this.currentPlayer] , id:this.currentPlayer}
-		// });
   		assert(this.playersIndexes.indexOf(name)!=-1);
   		assert(this.playersIndexes.indexOf(name)===this.currentPlayer);
 
