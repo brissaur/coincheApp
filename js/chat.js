@@ -181,7 +181,7 @@ socket.on('chosen_trumps', function(msg){//value, color
     });
   } else {
     displayMsg('system',' Chosen trumps: ' + msg.color);//TODO
-    $('#currentAnnounce').text(msg.value + msg.color);
+    $('#currentAnnounce').text(msg.value + msg.color + (msg.coinche?' coinched': ''));
   }
 
   for (pName in places){
