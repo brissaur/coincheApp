@@ -11,13 +11,13 @@ var gameID = -1;
 var zindex=10;
 var shiftLeft=0;
 
-  for (var i = 0; i < 8; i++) {
-    c=$('#card'+i);
-    c.css('z-index', zindex);
-    c.css('left', shiftLeft+100);
-    zindex*=10;
-    shiftLeft+=30;
-  }
+  // for (var i = 0; i < 8; i++) {
+  //   c=$('#card'+i);
+  //   c.css('z-index', zindex);
+  //   c.css('left', shiftLeft+100);
+  //   zindex*=10;
+  //   shiftLeft+=30;
+  // }
 
 
 

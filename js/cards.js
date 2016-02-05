@@ -3,7 +3,7 @@ var gameID = -1;
 var distribute = function(cards){
   // assert(cards.length==8);
   var zindex=10;
-  var shiftLeft=0;
+  var shiftLeft=90;
   var playerCards = $('#playerCards');
   // assert(playerCards);
   for (var i = 0; i < cards.length; i++) {
@@ -12,13 +12,14 @@ var distribute = function(cards){
     c.src='/images/cards/'+cards[i]+'.png';
     c.className = "card cardToBePlayed";
     c.style['z-index']=zindex;
-    c.style.left=shiftLeft+100;//('left', shiftLeft+100);
+    c.style.left=shiftLeft;//('left', shiftLeft+100);
     c.id=cards[i];
     zindex*=10;
-    shiftLeft+=30;
+    shiftLeft-=30;
     playerCards.append(c);
   }
 }
+distribute(testcards);
 
 var timeToAnnounce = function(id, lastAnnonce){
   //display area and wait input
