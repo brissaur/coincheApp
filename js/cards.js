@@ -19,11 +19,13 @@ var distribute = function(cards){
     playerCards.append(c);
   }
 }
-distribute(testcards);
-
+// distribute(testcards);
 var timeToAnnounce = function(id, lastAnnonce){
   //display area and wait input
   gameID = id;
+  $('.announceValue').each(function(index, element){
+      if(parseInt($(element).attr('value'))<=parseInt(lastAnnonce)) $(element).addClass('hidden');
+  })
   $('#announceBoard').removeClass('hidden');
 }
         function manageAnnounceButton(elem){
@@ -54,6 +56,7 @@ var timeToAnnounce = function(id, lastAnnonce){
           }
           $('.announceValue').removeClass('selected');
           $('.announceColor').removeClass('selected');
+          $('.announceValue').removeClass('hidden');
         }
 
 var timeToPlay = function(gameID, cards){
