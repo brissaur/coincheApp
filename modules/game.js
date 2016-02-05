@@ -161,13 +161,13 @@ function Game(id, players){
 	
 	this.scores = [{match:0, game:0, jetee:0},{match:0, game:0, jetee:0}];
 	this.currentTrump = '';
-	this.currentAnnounce = {color:'', value:0, coinche:false, team:-1};
+	this.currentAnnounce = {color:'', value:0, coinche:false, team:-1, playerName:''};
 
 	this.nextJetee = function(callback){//callback()
 		this.distribute();
 		this.currentTrump = '';//TODO
-		this.currentAnnounce = {color:'', value:0,coinche:false, team:-1};
-		console.log({dealer: this.currentDealer, firstPlayer: this.firstTrickPlayer, currentPlayer: this.currentPlayer});
+		this.currentAnnounce = {color:'', value:0,coinche:false, team:-1, playerName:''};
+		// console.log({dealer: this.currentDealer, firstPlayer: this.firstTrickPlayer, currentPlayer: this.currentPlayer});
 
 		for (pIndex in this.playersIndexes){
 			var pName = this.playersIndexes[pIndex];
@@ -175,7 +175,9 @@ function Game(id, players){
 				{msg:'', cards: this.players[pName].cards, dealer: this.playersIndexes[this.currentDealer]});
 		}
 
-		io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('announce', { winningAnnounce:{value:0}, msg:''});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
+  		var winningAnnounce = {value: this.currentAnnounce.value, color:this.currentAnnounce.color , playerName: this.currentAnnounce.playerName};
+		io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('announce', { winningAnnounce:winningAnnounce, msg:''});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
+
 		
 		if (callback) callback();
 	}
@@ -199,7 +201,7 @@ function Game(id, players){
 
   		// END OF ANNOUNCE 
   		if (value == 0 && ((this.currentPlayer+1)%this.nbPlayers)==this.firstTrickPlayer ){
-  			var announce = {name: this.playersIndexes[this.firstTrickPlayer], value:this.currentAnnounce.value, color:this.currentAnnounce.color}
+  			var announce = {name: this.playersIndexes[this.firstTrickPlayer], value:this.currentAnnounce.value, color:this.currentAnnounce.color, coinche: this.currentAnnounce.coinche}
   			if (announce.value == 0){//redistribution
   				this.currentDealer = (this.currentDealer+1)%this.nbPlayers;
   			} else {
@@ -477,6 +479,42 @@ function Game(id, players){
 	// 	//TODO
 	// 	return null;// index!!!
 	// }
+	this.reconnect = function(name){
+		assert(this.players[name]);
+		io.to(users[name].socket).emit('initialize_game', 
+			{msg:'', players: this.playersIndexes, dealer: this.playersIndexes[this.currentDealer]});
+		io.to(users[name].socket).emit('distribution', 
+				{msg:'', cards: this.players[name].cards, dealer: this.playersIndexes[this.currentDealer]});
+		//currentTrick
+		var currentTrickCards = {};
+		for (pIndex in this.currentTrick){
+			console.log({pindex: pIndex, card: this.currentTrick[pIndex]})
+			currentTrickCards[this.playersIndexes[pIndex]] = this.currentTrick[pIndex];
+		}
+		io.to(users[name].socket).emit('display_current_trick', { cards:currentTrickCards, msg:'current trick is ...'});
+		//scores
+		var scoresToSend = [];
+		scoresToSend.push(this.scores[this.players[name].team]);
+		scoresToSend.push(this.scores[(this.players[name].team+1)%2]);
+		io.to(users[name].socket).emit('scores', {message:'current scores', scores:scoresToSend});
+		//last announce to know who is winning
+			//TODO
+				//test scores
+				//add send last announces as a 'this guy announced this' to display right the coinche button as well
+		//are we currently announcing or playing??
+		if (this.playersIndexes[this.currentPlayer] == name ){
+			if (this.currentTrump){
+				io.to(users[name].socket).emit('chosen_trumps', 
+									{msg:'', color: this.currentAnnounce.color, value: this.currentAnnounce.value, coinche: this.currentAnnounce.coinche});
+				//latout si annonce fini
+				io.to(users[name].socket).emit('play', {message:'', cards: this.playableCards()});	
+			} else {
+  				var winningAnnounce = {value: this.currentAnnounce.value, color:this.currentAnnounce.color , playerName: this.currentAnnounce.playerName};
+				io.to(users[name].socket).emit('announce', { winningAnnounce:winningAnnounce, msg:'next announce'});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
+			}
+		}
+		console.log('reconnection of ' + name + ' to ' + this.gameID + ' successfull');
+	}
 }
 function cardsOfColor (cards, color){
 	var targetCards = [];

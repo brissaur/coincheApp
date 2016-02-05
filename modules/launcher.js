@@ -19,19 +19,33 @@ module.exports = function(io){
 		if (socket.handshake.session.user){
 			var name=socket.handshake.session.user.name;
 			// console.log(name + ' connected with socket ' + socket.id);
-			users[name] = {socket: socket.id, name: name, game:null};
 			socket.emit('connection_accepted', {message:'Connection accepted', name: name});//when connection refused? how?
 			socket.broadcast.emit('connection', {name: name});
+			
+			if (users[name]){
+				users[name].socket = socket.id;
+				if (users[name].game) Games.game(users[name].game.gameID).reconnect(name);
+			} else {
+				users[name] = {socket: socket.id, name: name, game:null};
+			}
 		} else {
 			socket.emit('connection_refused', {message:'Connection refused. Please refresh your browser (F5).'});//when connection refused? how?
 			socket.disconnect();
+			// socket.emit('reconnection', {message:''});
 		}
-
+		// socket.on('reconnection', function(){
+			
+			// socket.disconnect();
+		// })
 		// <<<<<<<<<<<< Manage disconnection >>>>>>>>>>>>>>
 		socket.on('disconnect', function(){
 			if (socket.handshake.session.user){
 				var name=socket.handshake.session.user.name;
-				delete users[name];
+				if (users[name].game){
+					users[name].socket = null; 
+				} else {
+					delete users[name];
+				}
 			}else{
 				var name='visitor';
 			}

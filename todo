@@ -29,6 +29,8 @@ changer comptage de points : pointfait + annoncé
 
 reconnection a une game si déco
 
+suppression game si tout le monde est parti
+
 display annonce popre '80H' -> '80 <3'
 
 deck : reproduire le 'mélange' = ne pas random mais remettre les carte dans l ordre des plis et random la coupe en pondéré;

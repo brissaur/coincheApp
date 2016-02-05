@@ -150,6 +150,8 @@ socket.on('coinche', function(msg){
 // <<<<<<<<<<<< Manage game initialization >>>>>>>>>>>>>>
 socket.on('initialize_game', function(msg){//cards, players, dealer
   var myIndex = msg.players.indexOf(pseudo);
+  console.log(msg.players);
+  console.log(pseudo);
   for (var i = 0; i <msg.players.length; i++) {
     var playername = msg.players[(i+myIndex)%msg.players.length];
     places[playername]=positions[i];
@@ -194,6 +196,17 @@ socket.on('played', function(msg){
     c.className = "card";
     targetCard.appendChild(c);
 });
+socket.on('display_current_trick', function(msg){
+  var cards = msg.cards;
+
+  for (player in cards){
+    var targetCard = document.getElementById(places[player]);
+    var c = document.createElement('img');
+    c.src='/images/cards/'+cards[player]+'.png';
+    c.className = "card";
+    targetCard.appendChild(c);
+  }
+});
 // <<<<<<<<<<<< Manage end of a trick >>>>>>>>>>>>>>
 socket.on('end_trick', function(msg){
   displayMsg('system',msg.message);
@@ -206,7 +219,9 @@ socket.on('end_jetee', function(msg){
   updateScores(msg.scores);
   $('#currentAnnounce').text('');
 });
-
+socket.on('scores', function(msg){
+  updateScores(msg.scores);
+})
 function updateScores(scores){
   $('#scoreUsGame').text(scores[0].game);
   $('#scoreUsMatch').text(scores[0].match);
