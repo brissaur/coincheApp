@@ -7,7 +7,6 @@ var places = {};
 var cards = [];
 var dealer;
 var pseudo = '';
-var gameID = -1;
 var zindex=10;
 var shiftLeft=0;
 
@@ -57,8 +56,7 @@ function invitePlayers(){
 }
 
 // <<<<<<<<<<<< Receive game invitation >>>>>>>>>>>>>>
-socket.on('game_invitation', function(msg){//gameID, name, 
-  gameID=msg.gameID;
+socket.on('game_invitation', function(msg){// name, 
   $('#inviteBoard').removeClass('hidden');
   $('#inviteBoard p').text(msg.name + ' invited you for a game.');
   // $('#messages').append($('<li>').text());//TODO EVOL scroll down auto
@@ -66,19 +64,16 @@ socket.on('game_invitation', function(msg){//gameID, name,
 });
 socket.on('game_invitation_cancelled', function(msg){
   $('#inviteBoard').addClass('hidden');
-  gameID=-1;
   displayMsg('system','Game was cancelled by ' + msg.name);
 
 });
 
     function acceptInvite(){
-      socket.emit('game_invitation_accepted',{gameID: gameID, msg:''});
-      gameID = -1;
+      socket.emit('game_invitation_accepted',{msg:''});
       $('#inviteBoard').addClass('hidden');
     }
     function refuseInvite(){
-      socket.emit('game_invitation_refused',{gameID: gameID, msg:''});
-      gameID = -1;
+      socket.emit('game_invitation_refused',{msg:''});
       $('#inviteBoard').addClass('hidden');
     }
 // <<<<<<<<<<<< Receive chat message >>>>>>>>>>>>>>
@@ -123,13 +118,13 @@ socket.on('disconnection', function(msg){
 
 // <<<<<<<<<<<< Manage my turn to play >>>>>>>>>>>>>>
 socket.on('play', function(msg){
-      timeToPlay(msg.gameID, msg.cards);
+      timeToPlay(msg.cards);
 
 });
 
 socket.on('announce', function(msg){
       // alert('announce');
-      timeToAnnounce(msg.gameID, msg.lastAnnounce);
+      timeToAnnounce(msg.lastAnnounce);
       console.log('announce : ' + msg.msg);
 });
 

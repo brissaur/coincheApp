@@ -1,5 +1,4 @@
 var testcards = ['9H','8S','JC','10H','JH','QH','KH','AH'];
-var gameID = -1;
 var greatestAnnounce = 0;
 var distribute = function(cards){
   // assert(cards.length==8);
@@ -23,7 +22,6 @@ var distribute = function(cards){
 // distribute(testcards);
 var timeToAnnounce = function(id, lastAnnonce){
   //display area and wait input
-  gameID = id;
   greatestAnnounce = lastAnnonce;
   $('.announceValue').each(function(index, element){
       if(parseInt($(element).attr('value'))<=parseInt(lastAnnonce)) $(element).addClass('hidden');
@@ -42,15 +40,13 @@ var timeToAnnounce = function(id, lastAnnonce){
             var value =  $('.announceValue.selected').attr('value');
             var color =  $('.announceColor.selected').attr('value');
             if (value && color){
-              socket.emit('announce', {value:value, color:color, gameID:gameID});
+              socket.emit('announce', {value:value, color:color});
               $('#announceBoard').addClass('hidden');
-              gameID = -1;
               greatestAnnounce = 0;
             }
           } else if (announceType == 'Pass'){
-              socket.emit('announce', {value:0, color:'', gameID:gameID});
+              socket.emit('announce', {value:0, color:''});
               $('#announceBoard').addClass('hidden');
-              gameID = -1;
               greatestAnnounce = 0;
           } else if (announceType == 'Coinche'){
             if (greatestAnnounce != 0){
@@ -66,12 +62,11 @@ var timeToAnnounce = function(id, lastAnnonce){
         }
 
         function coinche(){
-          socket.emit('coinche', {gameID:gameID});
+          socket.emit('coinche');//todo probleme reseaumessages croisés -> mettre la derniere announce?
           $('#bottomPlayer button').remove();
-          gameID = -1;
           greatestAnnounce = 0;
         }
-var timeToPlay = function(gameID, cards){
+var timeToPlay = function(cards){
   // $('#messages').append($('<li>').text('I can play...' + cards));
   cards.forEach(function(card){
     $('#'+card)
@@ -82,7 +77,7 @@ var timeToPlay = function(gameID, cards){
         var length = isItATen? 3:2;
         var targetCard =this.src.substr(firstIndex,length);
 
-        socket.emit('play', {card: targetCard, gameID:gameID});
+        socket.emit('play', {card: targetCard});
         $('#playerCards').children().css('border','').unbind('click');
         $('#bottomPlayer .announce').text('');
         this.parentNode.removeChild(this);
