@@ -13,11 +13,9 @@ double connection 'a ' at the same time;
 /////////////////
 ///FONTIONALITIES
 /////////////////
-la coinche: enable a la volee, emepcher si pas d annonce avant
-
 responsive taille carte
 
-affichage uniquement de ce quon peut annonce
+when play card, reorganize together
 
 affichage connectedUsers() côté client toujours trié
 affichage du status (in game/not in game) dans cette meme liste
@@ -31,9 +29,7 @@ changer comptage de points : pointfait + annoncé
 
 reconnection a une game si déco
 
-display annonce popre '80H' -> '80 &hearts'
-
-le scroll message pour le chat
+display annonce popre '80H' -> '80 <3'
 
 deck : reproduire le 'mélange' = ne pas random mais remettre les carte dans l ordre des plis et random la coupe en pondéré;
 
@@ -41,4 +37,8 @@ passer en https
 
 mettre un vrai systeme de login
 
+msg: review how to display: make it lisible & higher
+
 rajouter un système de room ? (bonus)
+
+message long: retour a la ligne

@@ -176,7 +176,7 @@ socket.on('chosen_trumps', function(msg){//value, color
     });
   } else {
     displayMsg('system',' Chosen trumps: ' + msg.color);//TODO
-    $('#currentAnnounce').text(msg.value + msg.color + (msg.coinche?' coinched': ''));
+    $('#currentAnnounce').text(msg.value + ' ' + displayCardColor(msg.color) + (msg.coinche?' coinched': ''));
   }
 
   for (pName in places){
@@ -231,3 +231,21 @@ var elem = $('<li>').text(msg);
   }, Math.max(5000,elem.text().length*150));
 }
 
+function displayCardColor(letters){
+  switch (letters){
+    case 'H':
+      return 'Hearts';
+    case 'S':
+      return 'Spades';
+    case 'C':
+      return 'Clubs';
+    case 'D':
+      return 'Diamonds';
+    case 'AT':
+      return 'All Trumps';
+    case 'NT':
+      return 'No Trumps';
+    default:
+      return;
+  }
+}
