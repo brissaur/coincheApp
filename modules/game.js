@@ -122,7 +122,7 @@ function init(gameID){
 	for (player in invites[gameID].player){
 		players.push(player);
 	}
-	return new Game(gameID, players);
+	return new Game(gameID, players.sort());//notion d'equipe a mettre ici !!!
 }
 _res.game = game;
 function game(gameID){

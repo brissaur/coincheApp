@@ -109,7 +109,7 @@ app.get('/connectedUsers',auth.checkAuthorized, function (req, res){
 			usersToSend.push(users[index].name);
 		}
 	}
-  	res.send(usersToSend);
+  	res.send(usersToSend.sort());
 });
 
 

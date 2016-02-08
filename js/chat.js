@@ -92,10 +92,18 @@ socket.on('chat_message', function(msg){
 // <<<<<<<<<<<< Manage new connection >>>>>>>>>>>>>>
 socket.on('connection', function(msg){
   displayMsg('system', msg.name + ' is connected.');
-  $('#userList').append($('<li>').text(msg.name).append($('<input />', { type: 'checkbox', value: msg.name})));
 
-  // $('#userList').append($('<li>').text(msg.name));
-  //TODO sort
+  var nbChildren = $('#userList').children().length;
+  $('#userList').children().each(function(index, element){
+    if (msg.name < $(element).text()){
+        $('<li>').text(msg.name).append($('<input />', { type: 'checkbox', value: msg.name})).insertBefore($(element));
+        return false;
+    }
+    if (index == nbChildren - 1){
+      $('<li>').text(msg.name).append($('<input />', { type: 'checkbox', value: msg.name})).appendTo('#userList');
+      return false;
+    }
+  });
 });
 socket.on('connection_accepted', function(msg){
   // $('#userList').append($('<li>').text(msg.name));
