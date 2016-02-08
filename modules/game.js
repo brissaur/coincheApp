@@ -488,9 +488,21 @@ function Game(id, players){
 		//currentTrick
 		var currentTrickCards = {};
 		for (pIndex in this.currentTrick){
-			console.log({pindex: pIndex, card: this.currentTrick[pIndex]})
-			currentTrickCards[this.playersIndexes[(pIndex+this.firstTrickPlayer)%this.nbPlayers]] = this.currentTrick[pIndex];
+			// console.log({pindex: pIndex, card: this.currentTrick[pIndex]})
+			var playerIndex = (parseInt(pIndex)+this.firstTrickPlayer)%this.nbPlayers;
+			currentTrickCards[this.playersIndexes[playerIndex]] = this.currentTrick[pIndex];
 		}
+		// console.log({
+		// 	pindex: pIndex,
+		// 	firstPlayer: this.firstTrickPlayer,
+		// 	nbPlayer: this.nbPlayers,
+		// 	finalIndex: playerIndex,
+		// 	finalName: this.playersIndexes[(pIndex+this.firstTrickPlayer)%this.nbPlayers]
+		// })
+		// console.log({
+		// 	type: 'currentTrick',
+		// 	cards: currentTrickCards
+		// })
 		io.to(users[name].socket).emit('display_current_trick', { cards:currentTrickCards, msg:'current trick is ...'});
 		//scores
 		var scoresToSend = [];

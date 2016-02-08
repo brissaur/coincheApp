@@ -1,5 +1,6 @@
 var testcards = ['9H','8S','JC','10H','JH','QH','KH','AH'];
 var greatestAnnounce = 0;
+var SHIFTLEFTVALUE = -30;
 var distribute = function(cards){
   // assert(cards.length==8);
   var zindex=10;
@@ -15,9 +16,12 @@ var distribute = function(cards){
     c.style.left=shiftLeft;//('left', shiftLeft+100);
     c.id=cards[i];
     zindex*=10;
-    shiftLeft-=30;
+    shiftLeft+=SHIFTLEFTVALUE;
     playerCards.append(c);
   }
+}
+var shiftCards = function(){
+
 }
 // distribute(testcards);
 var timeToAnnounce = function(winningAnnounce){
@@ -86,7 +90,10 @@ var timeToPlay = function(cards){
         socket.emit('play', {card: targetCard});
         $('#playerCards').children().css('border','').unbind('click');
         $('#bottomPlayer .announce').text('');
-        this.parentNode.removeChild(this);
+        // this.parentNode.removeChild(this);
+        console.log($(this).next());
+        console.log($(this).next().attr('value'));
+        $(this).remove();
     });
   });
   $('#bottomPlayer .announce').text('Your turn');
