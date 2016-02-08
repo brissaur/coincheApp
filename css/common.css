@@ -128,7 +128,7 @@ td{
       text-align: center;
 }
 .cardToBePlayed{
-      position: relative;
+      position: absolute;
       height: 150px;
       width: 100px;
 }

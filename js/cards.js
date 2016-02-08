@@ -1,10 +1,10 @@
 var testcards = ['9H','8S','JC','10H','JH','QH','KH','AH'];
 var greatestAnnounce = 0;
-var SHIFTLEFTVALUE = -30;
+var SHIFTLEFTVALUE = 30;
 var distribute = function(cards){
   // assert(cards.length==8);
   var zindex=10;
-  var shiftLeft=90;
+  var shiftLeft=150;
   var playerCards = $('#playerCards');
   // assert(playerCards);
   for (var i = 0; i < cards.length; i++) {
@@ -21,7 +21,12 @@ var distribute = function(cards){
   }
 }
 var shiftCards = function(){
-
+  var shiftLeft=150;
+  $('#playerCards img').each(function(index, elem){
+    console.log(elem);
+    $(elem).offset({'left': shiftLeft});
+    shiftLeft+=SHIFTLEFTVALUE;
+  })
 }
 // distribute(testcards);
 var timeToAnnounce = function(winningAnnounce){
@@ -91,9 +96,24 @@ var timeToPlay = function(cards){
         $('#playerCards').children().css('border','').unbind('click');
         $('#bottomPlayer .announce').text('');
         // this.parentNode.removeChild(this);
-        console.log($(this).next());
-        console.log($(this).next().attr('value'));
+        // console.log($(this).next());
+        // var zindex = $(this).css('zIndex');
+        // $('#playerCards img').each(function(index, elem){
+        //   var thisZindex = parseInt($(elem).css('zIndex'));
+        //   if (thisZindex > parseInt(zindex)){
+        //     var offset = $(elem).offset();
+        //     $(elem).offset({left: offset.left + SHIFTLEFTVALUE});
+        //   }
+        //   console.log(elem);
+        //   // console.log(elem);
+        // })
+        // var elem = elem.next()
+        // while (elem.next() ){
+        //   // $(this).next().css('z-index', )
+        //   elem = elem.next();
+        // }
         $(this).remove();
+        shiftCards();
     });
   });
   $('#bottomPlayer .announce').text('Your turn');
