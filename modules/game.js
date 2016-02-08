@@ -508,6 +508,8 @@ function Game(id, players){
 		var scoresToSend = [];
 		scoresToSend.push(this.scores[this.players[name].team]);
 		scoresToSend.push(this.scores[(this.players[name].team+1)%2]);
+		scoresToSend[0].jetee = 0;
+		scoresToSend[1].jetee = 0;
 		io.to(users[name].socket).emit('scores', {message:'current scores', scores:scoresToSend});
 		//last announce to know who is winning
 			//TODO
