@@ -10,6 +10,11 @@ function newDeck(){
 }
 
 function Deck(){
+	this.init=function(){
+		this.cards =['7H','8H','9H','10H','JH','QH','KH','AH','7D','8D','9D','10D','JD','QD','KD','AD','7S','8S','9S','10S','JS','QS','KS','AS','7C','8C','9C','10C','JC','QC','KC','AC'];
+		this.shuffle();
+		this.cutDeck();
+	}
 	this.shuffle=function(){
 	    for(var j, x, i = this.cards.length; i; j = Math.floor(Math.random() * i), x = this.cards[--i], this.cards[i] = this.cards[j], this.cards[j] = x);
 	};
@@ -18,12 +23,36 @@ function Deck(){
 		// console.log( this.cards.slice(0,8));
 	};
 	this.distribute=function(){
-		this.shuffle();
-		return [cardSort(this.cards.slice(0,8)),cardSort(this.cards.slice(8,16)),cardSort(this.cards.slice(16,24)),cardSort(this.cards.slice(24,32))];
+		var resultedDeck = [];
+		if (this.cards.length == 0){
+			this.init();	
+			resultedDeck= [cardSort(this.cards.slice(0,8)),cardSort(this.cards.slice(8,16)),cardSort(this.cards.slice(16,24)),cardSort(this.cards.slice(24,32))];
+		} else {
+			this.cutDeck();
+			var p1 = [].concat(this.cards.slice(0,3)).concat(this.cards.slice(12,15)).concat(this.cards.slice(24,26));
+			console.log(p1);
+			var p2 = [].concat(this.cards.slice(3,6)).concat(this.cards.slice(15,18)).concat(this.cards.slice(26,28));
+			var p3 = [].concat(this.cards.slice(6,9)).concat(this.cards.slice(18,21)).concat(this.cards.slice(28,30));
+			var p4 = [].concat(this.cards.slice(9,12)).concat(this.cards.slice(21,24)).concat(this.cards.slice(30,32));
+			var resultedDeck = [cardSort(p1),cardSort(p2),cardSort(p3),cardSort(p4)];
+		// 	//3 3 2
+		}
+		this.cards=[];
+		return resultedDeck;
 		// return [this.cards.slice(0,8).sort(),this.cards.slice(8,16).sort(),this.cards.slice(16,24).sort(),this.cards.slice(24,32).sort()];
 		//use splice()
 	};
-	this.cards=['7H','8H','9H','10H','JH','QH','KH','AH','7D','8D','9D','10D','JD','QD','KD','AD','7S','8S','9S','10S','JS','QS','KS','AS','7C','8C','9C','10C','JC','QC','KC','AC'];
+	this.cards=[];
+	this.collectTrick = function(trick){
+		this.cards.concat(trick.reverse());
+		console.log(this.cards);
+	}
+	this.cutDeck = function(){
+		var coupure = Math.floor(Math.random() * 15 + Math.random() * 15);
+		console.log({type: 'coupure', bottomCard: this.cards[coupure]});
+		var resultedDeck = [].concat(this.cards.slice(coupure, 32)).concat(this.cards.slice(0,coupure));
+		this.cards = resultedDeck;
+	}
 }
 
 function cardSort(cards){

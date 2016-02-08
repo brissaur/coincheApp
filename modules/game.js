@@ -206,6 +206,12 @@ function Game(id, players){
 			this.players[this.playersIndexes[i]].cards = cards[i];
 		};
 	}
+
+	this.collectCards = function(){
+		// this.currentTrick;
+		this.deck.collecTrick(this.currentTrick);
+	}
+
 // ==============================================================
 // ================== GAME RULES ===================================
 // ==============================================================
@@ -310,6 +316,7 @@ function Game(id, players){
 	}
 
 
+
 	this.endTrick = function(){
 		var endJetee = this.currentTrickIndex == 7;
 		io.emit('end_trick', {message:'trick well ended', trick: this.currentTrick});
@@ -324,6 +331,7 @@ function Game(id, players){
 		this.scores[0].trick = 0;
 		this.scores[1].trick = 0;
 		// console.log(this.scores);
+		this.collectCards();
 		this.currentTrick = [];
 		if (endJetee) {
 			this.endJetee();
