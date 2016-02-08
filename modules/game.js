@@ -104,12 +104,13 @@ function refuse(inviteID, player){
 
 function invitationCancel(inviteID, player){
 	for(pName in invites[inviteID].player){
-		console.log(pName);
-    	assert(users[pName]);
-    	assert(users[pName].game);
-    	assert(users[pName].game.gameID == inviteID);
-    	users[pName].game=null;
-    	updateStatus(pName, 'available');
+    	// assert(users[pName]);
+    	// assert(users[pName].game);
+    	// assert(users[pName].game.gameID == inviteID);
+    	if (users[pName]) {
+    		users[pName].game=null;
+			updateStatus(pName, 'available');
+		}
     }
 	delete invites[inviteID];
 

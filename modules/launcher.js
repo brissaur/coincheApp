@@ -22,7 +22,11 @@ module.exports = function(io){
 			
 			if (users[name]){
 				users[name].socket = socket.id;
-				users[name].status = 'in_game';
+				if (users[name].game){
+					users[name].status = 'in_game';
+				} else {
+					users[name].status = 'available';
+				}
 			} else {
 				users[name] = {socket: socket.id, name: name, game:null, status: 'available'};
 			}
@@ -32,17 +36,12 @@ module.exports = function(io){
 		} else {
 			socket.emit('connection_refused', {message:'Connection refused. Please refresh your browser (F5).'});//when connection refused? how?
 			socket.disconnect();
-			// socket.emit('reconnection', {message:''});
 		}
-		// socket.on('reconnection', function(){
-			
-			// socket.disconnect();
-		// })
 		// <<<<<<<<<<<< Manage disconnection >>>>>>>>>>>>>>
 		socket.on('disconnect', function(){
 			if (socket.handshake.session.user){
 				var name=socket.handshake.session.user.name;
-				if (users[name].game){
+				if (users[name].status == 'in_game' && users[name].game){
 					users[name].socket = null; 
 				} else {
 					delete users[name];
