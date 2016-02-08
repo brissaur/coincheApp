@@ -179,9 +179,18 @@ td{
 #messages * {
       position: absolute;
       font-size: 25px;
-      color: white;
+      bottom: 35px;
       /*background-color: rgba(0,0,0,0.5);*/
       /*color: white;*/
+}
+.system{
+      color: lightgrey;
+      font-style: italic;
+
+}
+.chat{
+      color: white;
+
 }
 #messages {
       list-style-type: none;

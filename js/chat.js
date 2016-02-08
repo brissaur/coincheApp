@@ -268,14 +268,21 @@ function updateScores(scores){
 }
 
 function displayMsg(type, msg){
-var elem = $('<li>').text(msg);
+var elem = $('<li>').text(msg).addClass(type);
+  // $(elem).css({top: $(elem).position().top + 400});
+  // $(elem).css({bottom: 0})
   $('#messages').append(elem);//TODO EVOL scroll down auto
   // var initialPos = $('#chatWindow').position();
   // $('#chatWindow').css({top: initialPos.top-35});
   // $("#mydiv").css({top: 200, left: 200});
   var elems = $('#messages li:not(:last-child)');
   elems.each(function(index, element){
-    $(element).css({top: $(element).position().top - 35});
+    console.log($(element).css('bottom'));
+    var prevBot = $(element).css('bottom');
+
+    prevBot = parseInt(prevBot.substr(0, prevBot.length - 2));
+    $(element).css({bottom: prevBot + 35});
+    // $(element).css({top: $(element).position().top - 35});
     // var prevTop = $(element).position.top;
     // $(element).css({top: 300});
     // console.log($(element).position());
