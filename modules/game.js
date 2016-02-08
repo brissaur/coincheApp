@@ -208,7 +208,7 @@ function Game(id, players){
 	  			this.currentTrump = this.currentAnnounce.color;
   			}
 	  		var winningAnnounce = {value: this.currentAnnounce.value, color:this.currentAnnounce.color , playerName: this.currentAnnounce.playerName};
-	  		console.log(winningAnnounce);
+	  		// console.log(winningAnnounce);
 			io.emit('announced', { winningAnnounce: winningAnnounce, value:value, color:color, msg:'', name:name});
   			this.firstTrickPlayer = (this.currentDealer+1)%this.nbPlayers;
   			this.currentPlayer = this.firstTrickPlayer;
@@ -239,7 +239,7 @@ function Game(id, players){
   		}
 
   		var winningAnnounce = {value: this.currentAnnounce.value, color:this.currentAnnounce.color , playerName: this.currentAnnounce.playerName};
-  		console.log(winningAnnounce);
+  		// console.log(winningAnnounce);
 		io.emit('announced', { winningAnnounce: winningAnnounce, value:value, color:color, msg:'', name:name});
 
   		// PLAYE DID PASS BUT NOT EVERYONE TALKED
@@ -489,7 +489,7 @@ function Game(id, players){
 		var currentTrickCards = {};
 		for (pIndex in this.currentTrick){
 			console.log({pindex: pIndex, card: this.currentTrick[pIndex]})
-			currentTrickCards[this.playersIndexes[pIndex]] = this.currentTrick[pIndex];
+			currentTrickCards[this.playersIndexes[(pIndex+this.firstTrickPlayer)%this.nbPlayers]] = this.currentTrick[pIndex];
 		}
 		io.to(users[name].socket).emit('display_current_trick', { cards:currentTrickCards, msg:'current trick is ...'});
 		//scores
@@ -513,7 +513,7 @@ function Game(id, players){
 				io.to(users[name].socket).emit('announce', { winningAnnounce:winningAnnounce, msg:'next announce'});//TODO: pas bon choix en théorie car peut jouer quune partie a la foi... donc server devrait sen rappeler
 			}
 		}
-		console.log('reconnection of ' + name + ' to ' + this.gameID + ' successfull');
+		// console.log('reconnection of ' + name + ' to ' + this.gameID + ' successfull');
 	}
 }
 function cardsOfColor (cards, color){

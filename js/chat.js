@@ -198,7 +198,7 @@ socket.on('played', function(msg){
 });
 socket.on('display_current_trick', function(msg){
   var cards = msg.cards;
-
+  console.log(msg);
   for (player in cards){
     var targetCard = document.getElementById(places[player]);
     var c = document.createElement('img');
