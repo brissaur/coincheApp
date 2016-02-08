@@ -97,6 +97,14 @@ module.exports = function(io){
 	  		var thisGame = Games.game(users[name].game.gameID);
 	  		thisGame.play(name, msg.card);
 	  	});
+
+	  	socket.on('leave_game', function(msg){//.card + .player + .firstPlayer
+			var name = socket.handshake.session.user.name;
+	  		assert(users[name]);
+	  		var thisGame = Games.game(users[name].game.gameID);
+	  		thisGame.leaveGame(name);
+	  		users[name].game = null;
+	  	});
 	});
 	return launcher;
 }

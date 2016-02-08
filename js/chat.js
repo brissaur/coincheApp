@@ -18,8 +18,6 @@ var shiftLeft=0;
   //   shiftLeft+=30;
   // }
 
-
-
 $.get('/connectedUsers',function(data){
     data.forEach(function(user){
       $('#userList').append($('<li>').text(user).append($('<input />', { type: 'checkbox', value: user})));
@@ -159,7 +157,9 @@ socket.on('initialize_game', function(msg){//cards, players, dealer
   };
   dealer = msg.dealer;
   $('#' + places[msg.dealer]).append($('<span>').text('D').addClass('dealer'));
+  $('<button>').text('Leave Game').attr('id','leaveGameButton').attr('onClick','leaveGame();').appendTo('#usersArea');
 });
+
 socket.on('distribution', function(msg){//cards, players, dealer
   distribute(msg.cards);
   console.log('distribution: ' + msg.cards);
@@ -221,7 +221,10 @@ socket.on('end_jetee', function(msg){
 });
 socket.on('scores', function(msg){
   updateScores(msg.scores);
-})
+});
+socket.on('leave_game', function(msg){
+  gameAbort(msg.name);
+});
 function updateScores(scores){
   $('#scoreUsGame').text(scores[0].game);
   $('#scoreUsMatch').text(scores[0].match);
@@ -263,4 +266,39 @@ function displayCardColor(letters){
     default:
       return;
   }
+}
+
+function leaveGame(){
+  if (confirm('Are you sure you wanna leave this game? This will kick everyone...')){
+    socket.emit('leave_game',{msg:''});
+    $('#leaveGameButton').remove();
+  }
+}
+  
+function gameAbort(){
+  // msg name left
+
+  //delete cards
+  $('#playerCards img').remove();
+  //delete current announce
+  $('#currentAnnounce').text('');
+  //delete dealer button
+  $('.dealer').remove();
+  //delete leave button
+  $('#leaveGameButton').remove();
+  //delete scores
+  $('.score').text('0');//todo : not first col
+  //delete names
+  //delete announces
+  //delete current Trick
+  //delete coinche button
+  for (pName in places){
+    var place = places[pName];
+    $('#'+ place + ' .playerName').text('');
+    $('#'+ place + ' .announce').text('');
+    $('#'+ place + ' img').remove();
+    $('#'+ place + ' button').remove();
+  }
+  //hide announce board
+  if (!$('#announceBoard').hasClass('hidden')) $('#announceBoard').addClass('hidden');
 }

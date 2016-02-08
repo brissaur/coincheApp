@@ -515,6 +515,20 @@ function Game(id, players){
 		}
 		// console.log('reconnection of ' + name + ' to ' + this.gameID + ' successfull');
 	}
+
+	this.leaveGame = function(name){
+		assert(this.players[name]);
+		// plus complique qu'il ny parait!
+		// soit qqun leave tt le monde part (pr linstant c ca)
+		// soit on attend que on soit full (en mode room)
+		for (pIndex in this.playersIndexes){
+			var pName = this.playersIndexes[pIndex];
+			users[pName].game = null;
+			io.to(users[pName].socket).emit('leave_game', {message:'', name:name});
+		}
+		delete games[this.gameID];
+	}
+
 }
 function cardsOfColor (cards, color){
 	var targetCards = [];
