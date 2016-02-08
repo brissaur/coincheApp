@@ -6,6 +6,8 @@ body{
       min-width: 768px ;
       background-color: blue;
       min-height: 300px;
+      /*max-width: 768px ;*/
+      max-height: 300px;
 }
 button{
       color:black;
@@ -171,11 +173,15 @@ td{
 
 }
 #chatWindow{
-      position: absolute;
+      /*position: absolute;*/
+      /*background-color: yellow;*/
 }
-#chatWindow * {
+#messages * {
+      position: absolute;
       font-size: 25px;
-      color: red;
+      color: white;
+      /*background-color: rgba(0,0,0,0.5);*/
+      /*color: white;*/
 }
 #messages {
       list-style-type: none;

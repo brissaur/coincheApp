@@ -13,34 +13,33 @@ double connection 'a ' at the same time;
 /////////////////
 ///FONTIONALITIES
 /////////////////
-responsive taille carte
-
-when play card, reorganize together
-
-affichage connectedUsers() côté client toujours trié
-affichage du status (in game/not in game) dans cette meme liste
-sécurise nouvel invite game: impossible si un joueur déja en game
-
-choisir les équipes au départ
-
-ajouter points belote
-
-changer comptage de points : pointfait + annoncé
-
-reconnection a une game si déco
-
-suppression game si tout le monde est parti
-
-display annonce popre '80H' -> '80 <3'
+msg: review how to display: make it lisible & higher
 
 deck : reproduire le 'mélange' = ne pas random mais remettre les carte dans l ordre des plis et random la coupe en pondéré;
 
-passer en https
+ajouter points belote
 
+choisir les équipes au départ
+
+changer comptage de points : pointfait + annoncé
+
+responsive taille carte
+
+display annonce popre '80H' -> '80 <3'
+
+passer en https
 mettre un vrai systeme de login
 
-msg: review how to display: make it lisible & higher
-
 rajouter un système de room ? (bonus)
+suppression game si tout le monde est parti (on leave_game or disconnect) --> leave game only
 
 message long: retour a la ligne
+
+display pli: rapprocher cartes + les unes sur les autres -> add class "playedCard" + count et mettre un zindex pusisacne de 10 de count
+
+si entrer pas en selection inputBar : soit envoyer, soit ne pas clear le texte;
+
+/////////////////
+///IMPROVEMENT
+/////////////////
+remember all announce to display on a reconnection

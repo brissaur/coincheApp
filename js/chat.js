@@ -270,16 +270,29 @@ function updateScores(scores){
 function displayMsg(type, msg){
 var elem = $('<li>').text(msg);
   $('#messages').append(elem);//TODO EVOL scroll down auto
-  var initialPos = $('#chatWindow').position();
-  $('#chatWindow').css({top: initialPos.top-30});
-  $("#mydiv").css({top: 200, left: 200});
+  // var initialPos = $('#chatWindow').position();
+  // $('#chatWindow').css({top: initialPos.top-35});
+  // $("#mydiv").css({top: 200, left: 200});
+  var elems = $('#messages li:not(:last-child)');
+  elems.each(function(index, element){
+    $(element).css({top: $(element).position().top - 35});
+    // var prevTop = $(element).position.top;
+    // $(element).css({top: 300});
+    // console.log($(element).position());
+  })
+  // if (elems.length > 0 ){
+  //   elems.position({top: $(this).position().top - 35});
+  // }
   setTimeout(function(){
     elem.hide(1000, function(){
       elem.remove();
-      var initialPos = $('#chatWindow').position();
-      $('#chatWindow').css({top: initialPos.top+30});
+      // var initialPos = $('#chatWindow').position();
+      // $('# ').css({top: initialPos.top+30});
     });
   }, Math.max(5000,elem.text().length*150));
+  // setTimeout(function(){
+  //   elem.text(' ');
+  // }, 2000);
 }
 
 function displayCardColor(letters){
