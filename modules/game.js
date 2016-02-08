@@ -25,15 +25,25 @@ module.exports = function(launcherIo){
 _res.invite = invite;
 function invite(name, players){
 			//TODO: verifier que users.game = null (= quil peut etre invité)
+	var allUserReady = true;
+	players.forEach(function(pName){
+		allUserReady = allUserReady && users[pName].status == 'available';
+	});
+	if (!allUserReady) return -1;//TODO: notifier
+
+
+
 	var inviteID = getNewAvailableGameId();
 
 	invites[inviteID] = {player:[]};
 	invites[inviteID].player[name] = true;
 	users[name].game = {gameID:inviteID};
+	updateStatus(name, 'hosting');
 	players.forEach(function(pName){
 		assert(users[pName]);
 		invites[inviteID].player[pName] = false;
     	users[pName].game = {gameID:inviteID};//, accepted:false}; ---> ca veut dire quil es toccupé par une game quil ait accepte ou pas
+		updateStatus(pName, 'pending_invite');
 						//TODO: decommenter underneath
 						io.to(users[pName].socket).emit('game_invitation', {msg:'', name: name, gameID: inviteID});
 	});
@@ -73,6 +83,10 @@ function accept(inviteID, player){
 				// console.log(game.playersIndexes);
 				for (pIndex in game.playersIndexes){
 					var pName = game.playersIndexes[pIndex];
+    				updateStatus(pName, 'in_game');
+    			}
+				for (pIndex in game.playersIndexes){
+					var pName = game.playersIndexes[pIndex];
 					console.log['pName : ==> ' + pName];
 					io.to(users[pName].socket).emit('initialize_game', 
 						{msg:'', players: game.playersIndexes, dealer: game.playersIndexes[game.currentDealer]});
@@ -89,12 +103,14 @@ function refuse(inviteID, player){
 }
 
 function invitationCancel(inviteID, player){
-	invites[inviteID].player.forEach(function(pName){
+	for(pName in invites[inviteID].player){
+		console.log(pName);
     	assert(users[pName]);
     	assert(users[pName].game);
     	assert(users[pName].game.gameID == inviteID);
     	users[pName].game=null;
-    })
+    	updateStatus(pName, 'available');
+    }
 	delete invites[inviteID];
 
 	io.emit('game_invitation_cancelled', {message:'', gameID: inviteID, name:player});
@@ -542,6 +558,10 @@ function Game(id, players){
 			users[pName].game = null;
 			io.to(users[pName].socket).emit('leave_game', {message:'', name:name});
 		}
+		for (pIndex in this.playersIndexes){
+			var pName = this.playersIndexes[pIndex];
+			updateStatus(pName, 'available');
+		}
 		delete games[this.gameID];
 	}
 
@@ -601,4 +621,13 @@ function trickValue(trick, trump, lastTrick){
 	});
 	if (lastTrick) res += 10;
 	return res;
+}
+
+function updateStatus(name, status){
+	users[name].status = status;
+	console.log('updateStatus');
+	console.log({name: name, status: status});
+	for (index in users){
+		io.to(users[index].socket).emit('user_status', {user:{name:name,status:status}});
+	}
 }

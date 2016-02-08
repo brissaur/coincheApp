@@ -1,4 +1,5 @@
-// ==============================================================
+
+
 // ================== GLOBAL VARS ===============================
 // ==============================================================
 var socket = io();
@@ -19,9 +20,18 @@ var shiftLeft=0;
   // }
 
 $.get('/connectedUsers',function(data){
+  // console.log(data);
     data.forEach(function(user){
-      $('#userList').append($('<li>').text(user).append($('<input />', { type: 'checkbox', value: user})));
+      var elem = $('<li>').text(user.name);
+      if (user.status == 'available') elem.append($('<input />', { type: 'checkbox', value: user.name}));
+      $('#userList').append(elem);
     })
+
+    // var nname= 'a';
+    // console.log('tatata');
+    // console.log($('#userList li input[type=checkbox]').length);
+    // console.log($('#userList li input[type=checkbox]').filter(function(){ return $(this).parents().text() === nname}).length);
+    // 
 });
 
 // <<<<<<<<<<<< Send chat message >>>>>>>>>>>>>>
@@ -91,16 +101,23 @@ socket.on('chat_message', function(msg){
 // });
 // <<<<<<<<<<<< Manage new connection >>>>>>>>>>>>>>
 socket.on('connection', function(msg){
-  displayMsg('system', msg.name + ' is connected.');
+  displayMsg('system', msg.user.name + ' is connected.');
 
   var nbChildren = $('#userList').children().length;
+  var elemToBeInserted = $('<li>').text(msg.user.name);
+  if (msg.user.status == 'available') elemToBeInserted.append($('<input />', { type: 'checkbox', value: msg.user.name}));
+  if (nbChildren == 0) {
+      elemToBeInserted.appendTo('#userList');
+      return false;
+    
+  }
   $('#userList').children().each(function(index, element){
-    if (msg.name < $(element).text()){
-        $('<li>').text(msg.name).append($('<input />', { type: 'checkbox', value: msg.name})).insertBefore($(element));
+    if (msg.user.name < $(element).text()){
+        elemToBeInserted.insertBefore($(element));
         return false;
     }
     if (index == nbChildren - 1){
-      $('<li>').text(msg.name).append($('<input />', { type: 'checkbox', value: msg.name})).appendTo('#userList');
+      elemToBeInserted.appendTo('#userList');
       return false;
     }
   });
@@ -233,6 +250,13 @@ socket.on('scores', function(msg){
 socket.on('leave_game', function(msg){
   gameAbort(msg.name);
 });
+
+socket.on('user_status', function(msg){
+  // alert('user_stauts');
+  // alert(elem);
+  updateStatus(msg.user.name, msg.user.status);
+  // console.log($(elem));
+})
 function updateScores(scores){
   $('#scoreUsGame').text(scores[0].game);
   $('#scoreUsMatch').text(scores[0].match);
@@ -310,3 +334,35 @@ function gameAbort(){
   //hide announce board
   if (!$('#announceBoard').hasClass('hidden')) $('#announceBoard').addClass('hidden');
 }
+
+function updateStatus(name, status){
+  console.log('status for ' + name + ' is '+ status);
+  var elem = $('#userList li').filter(function(){ return $(this).text() === name});
+  if (!elem) return 0;
+  switch (status){
+    case 'available':
+      elem.append($('<input />', { type: 'checkbox', value: name}));
+    break;
+
+    case 'hosting':
+    case 'pending_invite':
+    case 'in_game':
+      // $(elem).remove($())
+      // console.log('tatata');
+      // console.log($('#userList li').filter(function(){ return $(this).text() === name}));
+      $('#userList li').filter(function(){ return $(this).text() === name}).html(name);
+    break;
+    default:
+      alert(status);
+  }
+}
+
+// setTimeout(function(){
+//   console.log('in_game');
+//   updateStatus('a', 'in_game');
+// }, 2000);
+// setTimeout(function(){
+//   console.log('available');
+//   updateStatus('a', 'available');
+// }, 4000);
+  

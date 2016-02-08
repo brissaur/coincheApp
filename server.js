@@ -106,10 +106,13 @@ app.get('/connectedUsers',auth.checkAuthorized, function (req, res){
 	// console.log(users);
 	for (index in users){
 		if(users[index].name!=req.session.user.name){
-			usersToSend.push(users[index].name);
+			// usersToSend.push(users[index].name);
+			usersToSend.push({name: users[index].name, status: users[index].status});
 		}
 	}
-  	res.send(usersToSend.sort());
+  	res.send(usersToSend.sort(function(a,b){
+  		return a.name > b.name;
+  	}));
 });
 
 
