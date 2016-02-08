@@ -509,17 +509,7 @@ function Game(id, players){
 			var playerIndex = (parseInt(pIndex)+this.firstTrickPlayer)%this.nbPlayers;
 			currentTrickCards[this.playersIndexes[playerIndex]] = this.currentTrick[pIndex];
 		}
-		// console.log({
-		// 	pindex: pIndex,
-		// 	firstPlayer: this.firstTrickPlayer,
-		// 	nbPlayer: this.nbPlayers,
-		// 	finalIndex: playerIndex,
-		// 	finalName: this.playersIndexes[(pIndex+this.firstTrickPlayer)%this.nbPlayers]
-		// })
-		// console.log({
-		// 	type: 'currentTrick',
-		// 	cards: currentTrickCards
-		// })
+
 		io.to(users[name].socket).emit('display_current_trick', { cards:currentTrickCards, msg:'current trick is ...'});
 		//scores
 		var scoresToSend = [];
@@ -529,7 +519,9 @@ function Game(id, players){
 		scoresToSend[1].jetee = 0;
 		io.to(users[name].socket).emit('scores', {message:'current scores', scores:scoresToSend});
 		//last announce to know who is winning
-			//TODO
+			var winningAnnounce = {value: this.currentAnnounce.value, color:this.currentAnnounce.color , playerName: this.currentAnnounce.playerName};
+	  		// console.log(winningAnnounce);
+			io.emit('announced', { winningAnnounce: winningAnnounce, value:winningAnnounce.value, color:winningAnnounce.color, name:winningAnnounce.playerName, msg:''});
 				//test scores
 				//add send last announces as a 'this guy announced this' to display right the coinche button as well
 		//are we currently announcing or playing??

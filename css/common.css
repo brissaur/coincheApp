@@ -115,6 +115,7 @@ td{
       /*width: 150%;*/
 }
 .dealer{
+      display:inline-block;
       color: white;
       background-color: red;
       border-radius: 10px;

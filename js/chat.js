@@ -152,8 +152,9 @@ socket.on('announce', function(msg){
 });
 
 socket.on('announced', function(msg){
+  console.log(msg);
   $('#'+ places[msg.name] + ' .announce').text(' ' + (msg.value==0?'Pass':msg.value + msg.color));
-  console.log(msg.winningAnnounce);
+  // console.log(msg.winningAnnounce);
   if (msg.winningAnnounce.value == 0){
     //nothing
   } else if (places[msg.winningAnnounce.playerName] == 'topPlayer' || places[msg.winningAnnounce.playerName] == 'bottomPlayer'){
