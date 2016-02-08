@@ -516,10 +516,12 @@ function Game(id, players){
 				//test scores
 				//add send last announces as a 'this guy announced this' to display right the coinche button as well
 		//are we currently announcing or playing??
+		if (this.currentTrump) {
+			io.to(users[name].socket).emit('chosen_trumps', 
+							{msg:'', color: this.currentAnnounce.color, value: this.currentAnnounce.value, coinche: this.currentAnnounce.coinche});
+		}
 		if (this.playersIndexes[this.currentPlayer] == name ){
 			if (this.currentTrump){
-				io.to(users[name].socket).emit('chosen_trumps', 
-									{msg:'', color: this.currentAnnounce.color, value: this.currentAnnounce.value, coinche: this.currentAnnounce.coinche});
 				//latout si annonce fini
 				io.to(users[name].socket).emit('play', {message:'', cards: this.playableCards()});	
 			} else {
