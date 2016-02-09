@@ -12,7 +12,6 @@ function create(req, res, callback){//securité transfert mdp
 	email=req.body.email;
 	password=req.body.pwd;
 	name=req.body.username;
-	console.log('email= '+ email+ '+password=' + password +'+name=' + name + '');
 	
 	if(email==""){
 		msg='Please input an email.';//Todo: distinction error systemee/error algo

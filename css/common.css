@@ -2,12 +2,9 @@
 /************GLOBAL**************/
 /*******************************/
 body{
-      /*min-height: ;*/
       min-width: 768px ;
       background-color: blue;
       min-height: 300px;
-      /*max-width: 768px ;*/
-      max-height: 300px;
 }
 button{
       color:black;
@@ -70,7 +67,6 @@ td{
 }
 .player, .player img{
       position: absolute;
-      /*vertical-align: middle;*/
 }
 #topPlayer{
       left:45%;
@@ -113,8 +109,6 @@ td{
 .player img, #playerCards img{
       height: 88px;
       width: 66px;
-      /*height: 200%;*/
-      /*width: 150%;*/
 }
 .dealer{
       display:inline-block;
@@ -135,15 +129,6 @@ td{
       height: 150px;
       width: 100px;
 }
-.cardToBePlayed:hover{
-      /*cursor: hand;*/
-}
-.announce:hover{
-      /*background-color: blue;*/
-}
-/*.announce{
-      
-}*/
 /************INVITE**************/
 #inviteBoard{
       position: absolute;
@@ -178,16 +163,10 @@ td{
       z-index:100000000;
 
 }
-#chatWindow{
-      /*position: absolute;*/
-      /*background-color: yellow;*/
-}
 #messages * {
       position: absolute;
       font-size: 25px;
       bottom: 35px;
-      /*background-color: rgba(0,0,0,0.5);*/
-      /*color: white;*/
 }
 .system{
       color: lightgrey;

@@ -1,13 +1,22 @@
+// ==============================================================
+// ================== REQUIRES ==================================
+// ==============================================================
 var Games;
 var MongoClient = require('mongodb').MongoClient;
-var url = 'mongodb://localhost:27017/test';
 var assert = require('assert');
+var users = require('./connectedUsers');
 
+
+// ==============================================================
+// ================== GLOBAL VARS ==================================
+// ==============================================================
 var MAXPLAYER=2;
 var TIMEUNIT = 1000;
 var rooms = {};
-var users = require('./connectedUsers');
 var launcher = {};
+// var url = 'mongodb://localhost:27017/test';
+
+
 
 module.exports = function(io){
 	var test = {};
@@ -16,10 +25,9 @@ module.exports = function(io){
 	// // ================== SOCKETS ===================================
 	// // ==============================================================
 	io.on('connection', function(socket){
+		/*** FUNCTION CALLED ON A NEW CLIENT/SOCKET***/
 		if (socket.handshake.session.user){
 			var name=socket.handshake.session.user.name;
-			// console.log(name + ' connected with socket ' + socket.id);
-			
 			if (users[name]){
 				users[name].socket = socket.id;
 				if (users[name].game){
@@ -37,6 +45,9 @@ module.exports = function(io){
 			socket.emit('connection_refused', {message:'Connection refused. Please refresh your browser (F5).'});//when connection refused? how?
 			socket.disconnect();
 		}
+		/**********************************************************************************************************/
+		/************************************************ LISTENERS **********************************************/
+		/*********************************************************************************************************/
 		// <<<<<<<<<<<< Manage disconnection >>>>>>>>>>>>>>
 		socket.on('disconnect', function(){
 			if (socket.handshake.session.user){
@@ -59,11 +70,11 @@ module.exports = function(io){
 	  	});
 		// <<<<<<<<<<<< Manage game invitation >>>>>>>>>>>>>>
 		socket.on('game_invitation', function(msg){
-			//todo check input user
+			//TODO: check user input
 			var name = socket.handshake.session.user.name;
 		   	Games.invite(name,msg.players);
 	  	});
-		socket.on('game_invitation_accepted', function(msg){//msg-> gameID
+		socket.on('game_invitation_accepted', function(msg){
 			var name = socket.handshake.session.user.name;
 		    assert(users[name]);
 		    assert(users[name].game);
@@ -76,31 +87,34 @@ module.exports = function(io){
 	  	});
 
 		// <<<<<<<<<<<< Manage a player annonce >>>>>>>>>>>>>>
-	  	socket.on('announce', function(msg){//.card + .player + .firstPlayer
+	  	socket.on('announce', function(msg){
 			var name = socket.handshake.session.user.name;
 	  		assert(users[name]);
+	  		
 	  		var thisGame = Games.game(users[name].game.gameID);
 	  		thisGame.announce(name, msg.value,msg.color);
 	  	});
-	  	socket.on('coinche', function(msg){//.card + .player + .firstPlayer
+	  	socket.on('coinche', function(msg){
 			var name = socket.handshake.session.user.name;
 	  		assert(users[name]);
-	  		console.log({type: 'coinche', name: name});
+	  		
 	  		var thisGame = Games.game(users[name].game.gameID);
 	  		thisGame.coinche(name);
 	  	});
 	  	
 		// <<<<<<<<<<<< Manage a player plays >>>>>>>>>>>>>>
-	  	socket.on('play', function(msg){//.card + .player + .firstPlayer
+	  	socket.on('play', function(msg){
 			var name = socket.handshake.session.user.name;
 	  		assert(users[name]);
+	  		
 	  		var thisGame = Games.game(users[name].game.gameID);
 	  		thisGame.play(name, msg.card);
 	  	});
 
-	  	socket.on('leave_game', function(msg){//.card + .player + .firstPlayer
+	  	socket.on('leave_game', function(msg){
 			var name = socket.handshake.session.user.name;
 	  		assert(users[name]);
+	  		
 	  		var thisGame = Games.game(users[name].game.gameID);
 	  		thisGame.leaveGame(name);
 	  		users[name].game = null;

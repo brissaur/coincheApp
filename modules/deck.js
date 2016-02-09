@@ -1,9 +1,10 @@
 var MongoClient = 	('mongodb').MongoClient;
-
-var url = 'mongodb://localhost:27017/test';
-var CARD_COLLECTION = 'cards';
 var Cards = require(__dirname +'/cards').template();
+
+// var url = 'mongodb://localhost:27017/test';
+var CARD_COLLECTION = 'cards';
 var colorValues = {H: 0, S: 1, D:2,C: 3}
+
 exports.newDeck = newDeck;
 function newDeck(){
 	return new Deck;
@@ -17,10 +18,6 @@ function Deck(){
 	this.shuffle=function(){
 	    for(var j, x, i = this.cards.length; i; j = Math.floor(Math.random() * i), x = this.cards[--i], this.cards[i] = this.cards[j], this.cards[j] = x);
 	};
-	this.test=function(){
-		// console.log('hello');
-		// console.log( this.cards.slice(0,8));
-	};
 	this.distribute=function(){
 		var resultedDeck = [];
 		if (this.cards.length == 0) this.init();
@@ -32,8 +29,6 @@ function Deck(){
 		var resultedDeck = [cardSort(p1),cardSort(p2),cardSort(p3),cardSort(p4)];
 		this.cards=[];
 		return resultedDeck;
-		// return [this.cards.slice(0,8).sort(),this.cards.slice(8,16).sort(),this.cards.slice(16,24).sort(),this.cards.slice(24,32).sort()];
-		//use splice()
 	};
 	this.cards=[];
 	this.collectTrick = function(trick, team){

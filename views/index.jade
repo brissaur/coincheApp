@@ -59,34 +59,24 @@ block content
 							.player#topPlayer
 								span.playerName
 								span.announce
-								//- img(src="/images/cards/10C.png")
 							.player#rightPlayer
 								span.playerName
 								span.announce
-								//- img(src="/images/cards/10C.png")
 							.player#leftPlayer
 								span.playerName
 								span.announce
-								//- img(src="/images/cards/10C.png")
 							.player#bottomPlayer
 								span.playerName
 								span.announce
-								//- img(src="/images/cards/10C.png")
 				.row
 					#playerCards
-						//- img(src="/images/cards/10C.png")
-
-			
 			.col-xs-2#usersArea
 				label Coupaings
 					a(href='/logout',style="display:block;") Disconnect #{session.user.name}
-				//- form(action='/testa', method='post')
 				ul#userList
 				button(onclick='invitePlayers();', style='margin-bottom:100px') Invite
 		#chatWindow 
-			//- label Messages
 			ul#messages
-		//- .row
 		#messageForm.hidden
 			form(action='')
 				input#messageInput(autocomplete='off')

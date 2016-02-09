@@ -1,19 +1,18 @@
 var testcards = ['9H','8S','JC','10H','JH','QH','KH','AH'];
 var greatestAnnounce = 0;
 var SHIFTLEFTVALUE = 30;
+
+// <<<<<<<<<<<< Distribute cards >>>>>>>>>>>>>>
 var distribute = function(cards){
-  // assert(cards.length==8);
   var zindex=10;
   var shiftLeft=150;
   var playerCards = $('#playerCards');
-  // assert(playerCards);
   for (var i = 0; i < cards.length; i++) {
-    // console.log('card'+i);
     var c = document.createElement('img');
     c.src='/images/cards/'+cards[i]+'.png';
     c.className = "card cardToBePlayed";
     c.style['z-index']=zindex;
-    c.style.left=shiftLeft;//('left', shiftLeft+100);
+    c.style.left=shiftLeft;
     c.id=cards[i];
     $(c).hover(function(){
       $(this).css({cursor: 'pointer'});
@@ -25,6 +24,8 @@ var distribute = function(cards){
     playerCards.append(c);
   }
 }
+
+// <<<<<<<<<<<< REARRANGE HAND WHEN ONE IS PLAYED >>>>>>>>>>>>>>
 var shiftCards = function(){
   var shiftLeft=150;
   $('#playerCards img').each(function(index, elem){
@@ -33,9 +34,9 @@ var shiftCards = function(){
     shiftLeft+=SHIFTLEFTVALUE;
   })
 }
-// distribute(testcards);
+
+// <<<<<<<<<<<< USER MUST ANNOUNCE >>>>>>>>>>>>>>
 var timeToAnnounce = function(winningAnnounce){
-  //display area and wait input
   greatestAnnounce = winningAnnounce;
   $('.announceValue').each(function(index, element){
       if(parseInt($(element).attr('value'))<=parseInt(winningAnnounce.value)) $(element).addClass('hidden');
@@ -44,50 +45,51 @@ var timeToAnnounce = function(winningAnnounce){
   $('#bottomPlayer button').remove();
   $('#announceBoard').removeClass('hidden');
 }
-        function manageAnnounceButton(elem){
-          $('.'+$(elem).attr('class')).removeClass('selected');
-          $(elem).addClass('selected');
-        }
+function manageAnnounceButton(elem){
+  $('.'+$(elem).attr('class')).removeClass('selected');
+  $(elem).addClass('selected');
+}
 
-        function sendAnnounce(elem){
-          var announceType = $(elem).attr('value');
-          if (announceType == 'Announce'){
-            var value =  $('.announceValue.selected').attr('value');
-            var color =  $('.announceColor.selected').attr('value');
-            if (value && color){
-              socket.emit('announce', {value:value, color:color});
-              $('#announceBoard').addClass('hidden');
-              greatestAnnounce = 0;
-            } else {
-              return 0;
-            }
-          } else if (announceType == 'Pass'){
-              socket.emit('announce', {value:0, color:''});
-              $('#announceBoard').addClass('hidden');
-              greatestAnnounce = 0;
-          } else if (announceType == 'Coinche'){
-            if (greatestAnnounce != 0){
-                coinche();
-                $('#announceBoard').addClass('hidden');
-            } else {
-              return 0;
-            }
-          } else {
-            
-          }
-          $('.announceValue').removeClass('selected');
-          $('.announceColor').removeClass('selected');
-          $('.announceValue').removeClass('hidden');
-          $(".validation button[value='Coinche']").removeClass('hidden');
-        }
+function sendAnnounce(elem){
+  var announceType = $(elem).attr('value');
+  if (announceType == 'Announce'){
+    var value =  $('.announceValue.selected').attr('value');
+    var color =  $('.announceColor.selected').attr('value');
+    if (value && color){
+      socket.emit('announce', {value:value, color:color});
+      $('#announceBoard').addClass('hidden');
+      greatestAnnounce = 0;
+    } else {
+      return 0;
+    }
+  } else if (announceType == 'Pass'){
+      socket.emit('announce', {value:0, color:''});
+      $('#announceBoard').addClass('hidden');
+      greatestAnnounce = 0;
+  } else if (announceType == 'Coinche'){
+    if (greatestAnnounce != 0){
+        coinche();
+        $('#announceBoard').addClass('hidden');
+    } else {
+      return 0;
+    }
+  } else {
+    
+  }
+  $('.announceValue').removeClass('selected');
+  $('.announceColor').removeClass('selected');
+  $('.announceValue').removeClass('hidden');
+  $(".validation button[value='Coinche']").removeClass('hidden');
+}
 
-        function coinche(){
-          socket.emit('coinche');//todo probleme reseaumessages croisés -> mettre la derniere announce?
-          $('#bottomPlayer button').remove();
-          greatestAnnounce = 0;
-        }
+// <<<<<<<<<<<< USER COINCHE >>>>>>>>>>>>>>
+function coinche(){
+  socket.emit('coinche');
+  $('#bottomPlayer button').remove();
+  greatestAnnounce = 0;
+}
+// <<<<<<<<<<<< USER MUST PLAY >>>>>>>>>>>>>>
 var timeToPlay = function(cards){
-  // $('#messages').append($('<li>').text('I can play...' + cards));
   cards.forEach(function(card){
     $('#'+card)
       .css('border','thin solid red')
@@ -101,31 +103,9 @@ var timeToPlay = function(cards){
         socket.emit('play', {card: targetCard});
         $('#playerCards').children().css('border','').unbind('click');
         $('#bottomPlayer .announce').text('');
-        // this.parentNode.removeChild(this);
-        // console.log($(this).next());
-        // var zindex = $(this).css('zIndex');
-        // $('#playerCards img').each(function(index, elem){
-        //   var thisZindex = parseInt($(elem).css('zIndex'));
-        //   if (thisZindex > parseInt(zindex)){
-        //     var offset = $(elem).offset();
-        //     $(elem).offset({left: offset.left + SHIFTLEFTVALUE});
-        //   }
-        //   console.log(elem);
-        //   // console.log(elem);
-        // })
-        // var elem = elem.next()
-        // while (elem.next() ){
-        //   // $(this).next().css('z-index', )
-        //   elem = elem.next();
-        // }
         $(this).remove();
         shiftCards();
     });
   });
   $('#bottomPlayer .announce').text('Your turn');
 }
-
-
-
-// distribute(testcards); 
-

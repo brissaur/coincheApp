@@ -13,15 +13,8 @@ double connection 'a ' at the same time;
 /////////////////
 ///FONTIONALITIES
 /////////////////
-deck : reproduire le 'mélange' = ne pas random mais remettre les carte dans l ordre des plis et random la coupe en pondéré;
-
-ajouter points belote
-
-choisir les équipes au départ
-
 changer comptage de points : pointfait + annoncé
 
-responsive taille carte
 
 display annonce popre '80H' -> '80 <3'
 
@@ -37,7 +30,21 @@ display pli: rapprocher cartes + les unes sur les autres -> add class "playedCar
 
 si entrer pas en selection inputBar : soit envoyer, soit ne pas clear le texte;
 
+4x pass -> refaire le dec
+
+mettre une couleur sur les cartes qd on passe le curseur dessu?
+
+choisir les équipes au départ
+
+scores: faire plus que l autre en plus de faire le contrat
+	-> as tu fais le contrat ? oui -> as tu plus que l'autre ?         KO a truver'
 /////////////////
 ///IMPROVEMENT
 /////////////////
 remember all announce to display on a reconnection
+
+
+/////////////////
+///DESIGN
+/////////////////
+responsive taille carte
