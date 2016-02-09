@@ -15,6 +15,11 @@ var distribute = function(cards){
     c.style['z-index']=zindex;
     c.style.left=shiftLeft;//('left', shiftLeft+100);
     c.id=cards[i];
+    $(c).hover(function(){
+      $(this).css({cursor: 'pointer'});
+    }, function(){
+      $(this).css({cursor: 'default'});
+    })
     zindex*=10;
     shiftLeft+=SHIFTLEFTVALUE;
     playerCards.append(c);
@@ -86,6 +91,7 @@ var timeToPlay = function(cards){
   cards.forEach(function(card){
     $('#'+card)
       .css('border','thin solid red')
+
       .on('click', function (event){
         var isItATen = this.src.substr(-7,2)=='10';
         var firstIndex = isItATen? -7:-6;

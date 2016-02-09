@@ -135,6 +135,12 @@ td{
       height: 150px;
       width: 100px;
 }
+.cardToBePlayed:hover{
+      /*cursor: hand;*/
+}
+.announce:hover{
+      /*background-color: blue;*/
+}
 /*.announce{
       
 }*/
