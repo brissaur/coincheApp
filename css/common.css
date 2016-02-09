@@ -104,7 +104,7 @@ td{
 .player span{
       display: block;
 }
-.announce {
+.announce, .belote {
       border-radius: 4px;
       background-color: lightgrey;
       padding-right: 10px;

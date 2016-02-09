@@ -179,7 +179,7 @@ function Game(id, players){
 	this.scores = [{match:0, game:0, jetee:0},{match:0, game:0, jetee:0}];
 	this.currentTrump = '';
 	this.currentAnnounce = {color:'', value:0, coinche:false, team:-1, playerName:''};
-
+	this.belote = null;
 	this.nextJetee = function(callback){//callback()
 		this.distribute();
 		this.currentTrump = '';//TODO
@@ -249,7 +249,9 @@ function Game(id, players){
 								// console.log('all passed');
 								this.nextJetee();
 							} else {
-								// console.log('finalAnnounce lets play');
+								//belote ?
+								var bbelote = this.isThereABelote();
+								console.log({belote: bbelote});
 								io.to(users[this.playersIndexes[this.currentPlayer]].socket).emit('play', {message:'', cards: this.playableCards()});	
 							}
 			// console.log(this);
@@ -301,9 +303,15 @@ function Game(id, players){
 
   		assert(AUTHORIZEDCARDS.indexOf(card)!=-1, 'AUTHORIZEDCARDS.indexOf(card): ' + AUTHORIZEDCARDS.indexOf(card) +' ' + card);
   		//remove played card from hand
-		io.emit('played', {name: name, card:card});//TODO: Gérer les erreurs
   		var cardIndex = this.players[name].cards.indexOf(card);
   		assert(cardIndex!=-1, 'User played '+card+' but available cards should be '+ this.players[name].cards);
+
+		io.emit('played', {name: name, card:card});//TODO: Gérer les erreurs
+  		if (this.belote && name == this.playersIndexes[this.belote.player] && (Cards[card].value == 'Q' || Cards[card].value == 'K')){
+  			console.log('belote!!!!!');
+  			io.emit('belote', {message:'', name:name, rebelote: this.belote.rebelote})
+  			if (!this.belote.rebelote) this.belote.rebelote = true;
+  		}
   		this.players[name].cards.splice(cardIndex, 1);
 		
 		this.currentTrick.push(card);//TODO : order 
@@ -347,15 +355,52 @@ function Game(id, players){
 		}
 
 	}
+	this.isThereABelote = function(){
+		console.log('isThereABelote?');
+		if (this.currentTrump == 'AT' || this.currentTrump == 'NT') return false;
+		
+		for (pName in this.players){
+			console.log(pName);
+			var cards = this.players[pName].cards;
+			for (var j = 0; j < cards.length; j++) {//for each of its card
+				var card = Cards[cards[j]];
+				if (card.color == this.currentTrump){
+					if (card.value == 'K'){
+						console.log('...has the King!');
+						for (var k = j+1; k < cards.length; k++){
+							var secondCard=Cards[cards[k]];
+							if (secondCard.value == 'Q' && secondCard.color == this.currentTrump){
+								console.log('...and the Queen!');
+								return this.belote = {player : this.playersIndexes.indexOf(pName), rebelote: false};
+							}
+						}
+						console.log('...but not the Queen!');
+						return false;	
+					}
+					if (card.value == 'Q'){
+						console.log('...has the Queen!');
+						for (var k = j+1; k < cards.length; k++){
+							var secondCard=Cards[cards[k]];
+							if (secondCard.value == 'K' && secondCard.color == this.currentTrump){
+								console.log('...and the King!');
+								return this.belote = {player : this.playersIndexes.indexOf(pName), rebelote: false};
+							}
+						}
+						console.log('...but not the King!');
+						return false;
+					}
+				}
+			}
+		}
+	}
 
 	this.endJetee = function(){
 		//compter les points
 		// console.log(this);
 		// console.log(this.currentAnnounce);
 		if (this.scores[this.currentAnnounce.team].jetee == 162) this.scores[this.currentAnnounce.team].jetee = 250;
-		var BELOTTE = false; //TODO !!
-		if (BELOTTE) this.scores[this.currentAnnounce.team].jetee +=20;
-		//TODO: AJOUTER BELOTTE
+		if (this.belote) this.scores[this.players[this.playersIndexes[this.belote.player]].team].jetee +=20;
+		//TODO: AJOUTER BELOTE
 		var winner = this.scores[this.currentAnnounce.team].jetee >= this.currentAnnounce.value?this.currentAnnounce.team:(this.currentAnnounce.team+1)%2; 
 		this.scores[this.players[this.playersIndexes[winner]].team].match += parseInt(this.currentAnnounce.value);
 		var endMatch = (this.scores[0].match >=2000 || this.scores[1].match >=2000);
@@ -376,7 +421,7 @@ function Game(id, players){
 		} else {
 
 		}
-
+		this.belote = null;
 		this.currentDealer = (this.currentDealer + 1)%this.nbPlayers;
 		this.firstTrickPlayer = (this.currentDealer + 1)%this.nbPlayers;
 		this.currentPlayer = this.firstTrickPlayer;

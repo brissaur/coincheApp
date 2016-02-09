@@ -1,5 +1,10 @@
 // =========TEST==================
-
+var x = null;
+if (x) {
+  console.log('KO')
+} else {
+  console.log('OK')
+}
 // ================== GLOBAL VARS ===============================
 // ==============================================================
 var socket = io();
@@ -142,7 +147,20 @@ socket.on('disconnection', function(msg){
 // <<<<<<<<<<<< Manage my turn to play >>>>>>>>>>>>>>
 socket.on('play', function(msg){
       timeToPlay(msg.cards);
+});
 
+socket.on('belote', function(msg){
+  console.log({
+    type: 'belote',
+    msg: msg
+  })
+  var elem = $('<span>').addClass('belote').text( (msg.rebelote?'re':'')+ 'belote!');
+  $('#'+ places[msg.name]).append(elem);
+  setTimeout(function(){
+    elem.remove();
+  },2000);
+
+  
 });
 
 socket.on('announce', function(msg){
