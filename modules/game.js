@@ -395,16 +395,16 @@ function Game(id, players){
 	}
 
 	this.endJetee = function(){
-		//compter les points
-		// console.log(this);
-		// console.log(this.currentAnnounce);
+		/****COMPUTE SCORES****/
 		if (this.scores[this.currentAnnounce.team].jetee == 162) this.scores[this.currentAnnounce.team].jetee = 250;
 		if (this.belote) this.scores[this.players[this.playersIndexes[this.belote.player]].team].jetee +=20;
-		//TODO: AJOUTER BELOTE
-		var winner = this.scores[this.currentAnnounce.team].jetee >= this.currentAnnounce.value?this.currentAnnounce.team:(this.currentAnnounce.team+1)%2; 
+		/****COMPUTE WINNER****/
+		var contractDone = this.scores[this.currentAnnounce.team].jetee >= this.currentAnnounce.value;
+		var betterThanOtherTeam = this.scores[this.currentAnnounce.team].jetee > this.scores[(this.currentAnnounce.team+1)%2].jetee - (this.belote?(this.players[this.playersIndexes[this.belote.player]].team == (this.currentAnnounce.team+1)%2?20:0):0);
+		var winner = (contractDone && betterThanOtherTeam)?this.currentAnnounce.team:(this.currentAnnounce.team+1)%2; 
+		/****AFFECT SCORES****/
 		this.scores[this.players[this.playersIndexes[winner]].team].match += parseInt(this.currentAnnounce.value);
-		var endMatch = (this.scores[0].match >=2000 || this.scores[1].match >=2000);
-		// console.log(this.scores);
+		/****INFORM PLAYERS****/
 		for (pIndex in this.playersIndexes){
 			var pName = this.playersIndexes[pIndex];
 			var scoresToSend = [];
@@ -412,25 +412,23 @@ function Game(id, players){
 			scoresToSend.push(this.scores[(this.players[pName].team+1)%2]);
 			io.to(users[pName].socket).emit('end_jetee', {message:'jetee well ended', scores:scoresToSend});
 		}	
+		/****MANAGE END MATCH****/
+		var endMatch = (this.scores[0].match >=2000 || this.scores[1].match >=2000);
+		if (endMatch){
+			this.endMatch();
+		}
+		/****ADVANCE IN GAME****/
 		this.gatherCards();
 		this.scores[0].jetee = 0;
 		this.scores[1].jetee = 0;
-		// this.scores = [{match:0, game:0, jetee:0},{match:0, game:0, jetee:0}];
-		if (endMatch){
-			this.endMatch();
-		} else {
-
-		}
 		this.belote = null;
 		this.currentDealer = (this.currentDealer + 1)%this.nbPlayers;
 		this.firstTrickPlayer = (this.currentDealer + 1)%this.nbPlayers;
 		this.currentPlayer = this.firstTrickPlayer;
 		this.currentTrickIndex = 0;
-		// this.currentTrick = [];
 		console.log('endJetee');
-		this.nextJetee();
-		
 
+		this.nextJetee();
 	}
 	this.endMatch = function(){
 		var winner = this.scores[0].match >=2000 ? 0:1;
@@ -439,7 +437,7 @@ function Game(id, players){
 		this.scores[1].match = 0;
 		for (pIndex in this.playersIndexes){
 			var pName = this.playersIndexes[pIndex];
-			io.to(users[pName].socket).emit('end_match', {message:'match well ended', scores:this.scores});
+			io.to(users[pName].socket).emit('end_match', {message:'match well ended', winner: this.players[pName].team == winner?0:1});
 		}	
 	}
 
