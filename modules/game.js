@@ -87,7 +87,7 @@ function accept(inviteID, player){
     			}
 				for (pIndex in game.playersIndexes){
 					var pName = game.playersIndexes[pIndex];
-					console.log['pName : ==> ' + pName];
+					// console.log['pName : ==> ' + pName];
 					io.to(users[pName].socket).emit('initialize_game', 
 						{msg:'', players: game.playersIndexes, dealer: game.playersIndexes[game.currentDealer]});
 				}
@@ -207,9 +207,13 @@ function Game(id, players){
 		};
 	}
 
-	this.collectCards = function(){
+	this.collectCards = function(team){
 		// this.currentTrick;
-		this.deck.collecTrick(this.currentTrick);
+		this.deck.collectTrick(this.currentTrick, team);
+	}
+
+	this.gatherCards = function(){
+		this.deck.fusionTeamTricks();
 	}
 
 // ==============================================================
@@ -322,16 +326,16 @@ function Game(id, players){
 		io.emit('end_trick', {message:'trick well ended', trick: this.currentTrick});
 		//count points
 		var winner = (this.trickWinner().index+this.firstTrickPlayer)%this.nbPlayers;
-		console.log({
-			winnerRank: this.trickWinner().index,
-			first: this.firstTrickPlayer,
-			winner : winner
-		})
+		// console.log({
+		// 	winnerRank: this.trickWinner().index,
+		// 	first: this.firstTrickPlayer,
+		// 	winner : winner
+		// })
 		this.scores[this.players[this.playersIndexes[winner]].team].jetee += trickValue(this.currentTrick, this.currentTrump, endJetee);
 		this.scores[0].trick = 0;
 		this.scores[1].trick = 0;
 		// console.log(this.scores);
-		this.collectCards();
+		this.collectCards(this.players[this.playersIndexes[winner]].team);
 		this.currentTrick = [];
 		if (endJetee) {
 			this.endJetee();
@@ -363,6 +367,7 @@ function Game(id, players){
 			scoresToSend.push(this.scores[(this.players[pName].team+1)%2]);
 			io.to(users[pName].socket).emit('end_jetee', {message:'jetee well ended', scores:scoresToSend});
 		}	
+		this.gatherCards();
 		this.scores[0].jetee = 0;
 		this.scores[1].jetee = 0;
 		// this.scores = [{match:0, game:0, jetee:0},{match:0, game:0, jetee:0}];
@@ -626,8 +631,8 @@ function trickValue(trick, trump, lastTrick){
 
 function updateStatus(name, status){
 	users[name].status = status;
-	console.log('updateStatus');
-	console.log({name: name, status: status});
+	// console.log('updateStatus');
+	// console.log({name: name, status: status});
 	for (index in users){
 		io.to(users[index].socket).emit('user_status', {user:{name:name,status:status}});
 	}
