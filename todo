@@ -36,8 +36,6 @@ mettre une couleur sur les cartes qd on passe le curseur dessu?
 
 choisir les équipes au départ
 
-scores: faire plus que l autre en plus de faire le contrat
-	-> as tu fais le contrat ? oui -> as tu plus que l'autre ?         KO a truver'
 /////////////////
 ///IMPROVEMENT
 /////////////////
@@ -48,3 +46,8 @@ remember all announce to display on a reconnection
 ///DESIGN
 /////////////////
 responsive taille carte
+
+/////////////////
+///DEPLOY PRODUCTION
+/////////////////
+Enlever le contour rouge uatour des cartes
