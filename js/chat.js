@@ -20,7 +20,8 @@ var shiftLeft=0;
 $.get('/connectedUsers',function(data){
     data.forEach(function(user){
       var elem = $('<li>').text(user.name);
-      if (user.status == 'available') elem.append($('<input />', { type: 'checkbox', value: user.name}));
+      updateStatusElem(elem,user.status);
+      // if (user.status == 'available') elem.append($('<input />', { type: 'checkbox', value: user.name}));
       $('#userList').append(elem);
     })
 
@@ -61,7 +62,8 @@ socket.on('connection', function(msg){
 
   var nbChildren = $('#userList').children().length;
   var elemToBeInserted = $('<li>').text(msg.user.name);
-  if (msg.user.status == 'available') elemToBeInserted.append($('<input />', { type: 'checkbox', value: msg.user.name}));
+  // if (msg.user.status == 'available') elemToBeInserted.append($('<input />', { type: 'checkbox', value: msg.user.name}));
+  updateStatusElem(elemToBeInserted, msg.user.status);
   if (nbChildren == 0) {
       elemToBeInserted.appendTo('#userList');
       return false;
@@ -98,33 +100,209 @@ socket.on('disconnection', function(msg){
 // ================== GAME INVITATION ===============================
 // ==============================================================
 // <<<<<<<<<<<< Receive game invitation >>>>>>>>>>>>>>
+
+function newGame(){
+  socket.emit('new_game',{message:''});
+  //enter player as bottomPlayer
+  $('#bottomPlayer .playerName').text(pseudo);
+  $('#newGameButton').addClass('hidden');
+  $('#inviteButton').removeClass('hidden');
+  $('#playButton').removeClass('hidden');
+  $('#leaveRoomButton').removeClass('hidden');
+  // $('<button>').text('invite coupaings').addClass('col-xs-6').addClass('col-xs-offset-3').attr('onClick', 'invitePlayers()')
+    // .appendTo($('#board'));
+  //invite player
+  //add swap with players when one player join
+
+
+  //game init: who is dealer + where are players + ...?
+};
+
+socket.on('joined_room', function(msg){
+  console.log({type:'join', msg: msg});
+  displayMsg('system',msg.name + ' joined the room.');
+  places[msg.name]=positions[msg.place];
+  $('#'+ places[msg.name] + ' .playerName').text(msg.name);
+  $('<button>').attr('onClick', 'swapPlace('+"'"+msg.name+"'"+');').text('swap place').appendTo($('#'+ places[msg.name]));
+
+});
+socket.on('left_room', function(msg){
+  displayMsg('system',msg.name + ' left the room.');
+  emptyPlace(places[msg.name]);
+});
+socket.on('room_cancel', function(msg){
+  displayMsg('system','Host left the room. You were removed from the room.');
+  positions.forEach(function(pos){
+    emptyPlace(pos);
+  })
+  $('#leaveRoomButton').addClass('hidden');
+  $('#newGameButton').removeClass('hidden');
+});
+
+socket.on('present_players', function(msg){
+  debugger;
+  console.log({type:'present_players', msg: msg});
+  var myIndex = msg.players.indexOf(pseudo);
+  for (var i = 0; i <msg.players.length; i++) {
+    var playername = msg.players[i];
+    places[playername]=positions[(i-myIndex+4)%4];
+    $('#'+ places[playername] + ' .playerName').text(playername)
+  };
+  // dealer = msg.dealer;
+  // $('#' + places[msg.dealer]).append($('<span>').text('D').addClass('dealer'));
+  // $('<button>').text('Leave Game').attr('id','leaveGameButton').attr('onClick','leaveGame();').appendTo('#usersArea');
+});
+
 socket.on('game_invitation', function(msg){// name, 
   $('#inviteBoard').removeClass('hidden');
+  $('#newGameBoard').addClass('hidden');
   $('#inviteBoard p').text(msg.name + ' invited you for a game.');
 });
+
 socket.on('game_invitation_cancelled', function(msg){
   $('#inviteBoard').addClass('hidden');
-  displayMsg('system','Game was cancelled by ' + msg.name);
+  displayMsg('system',msg.name + ' declined the invitation.');
+});
+socket.on('invitation_timeout', function(msg){
+  $('#inviteBoard').addClass('hidden');
+  $('#newGameBoard').removeClass('hidden');
+
+  // displayMsg('system',msg.name + ' declined the invitation.');
+});
+socket.on('game_ready_to_start',function(msg){
+  $('#playButton').removeClass('playNotAvailable');
+});
+socket.on('game_not_ready_to_start',function(msg){
+  $('#playButton').addClass('playNotAvailable');
 });
 
 function invitePlayers(){
   var players = [];
-  $(':checkbox:checked').each(function(index, element){//TODO pb si aucun enfant;
+  $('#inviteList :checkbox:checked').each(function(index, element){//TODO pb si aucun enfant;
     players.push($(this).val());
   });
-  $(':checkbox:checked').attr('checked', false);
-  if(players.length>0) socket.emit('game_invitation', {players: players});
+  if(players.length>0) {
+    socket.emit('game_invitation', {players: players});
+    $('#inviteList li').remove();
+    $('#inviteFriends').addClass('hidden');
+  }
+  $('#newGameBoard').removeClass('hidden');
 }
+function abortFriendsInvitation(){
+  $('#inviteList li').remove();
+  $('#newGameBoard').removeClass('hidden');
+  $('#inviteFriends').addClass('hidden');
+}
+
 function acceptInvite(){
   socket.emit('game_invitation_accepted',{msg:''});
+  $('#bottomPlayer .playerName').text(pseudo);
   $('#inviteBoard').addClass('hidden');
+  $('#leaveRoomButton').removeClass('hidden');
+  $('#newGameBoard').removeClass('hidden');
+  $('#newGameButton').addClass('hidden');
 }
 function refuseInvite(){
   socket.emit('game_invitation_refused',{msg:''});
   $('#inviteBoard').addClass('hidden');
+  $('#newGameBoard').removeClass('hidden');
 }
 
+function inviteFriends(){
+  $('#inviteFriends').removeClass('hidden');
+  $('#newGameBoard').addClass('hidden');
+  $.get('/connectedUsers',function(data){
+    data.forEach(function(user){
+      if(user.status == 'available'){
+        var elem = $('<li>').text(user.name).append($('<input />', { type: 'checkbox', value: user.name}));
+        $('#inviteList').append(elem);
+      }
+    });
+    if ($('#inviteList li').length == 0) $('<li>').text('No friends can be invited').appendTo($('#inviteList'));
+  });
+}
 
+function leaveRoom(){
+  $('#leaveRoomButton').addClass('hidden');
+  socket.emit('leave_room',{msg:''});
+  positions.forEach(function(pos){
+    emptyPlace(pos);
+  })
+  $('#newGameButton').removeClass('hidden');
+  var elem = $('#inviteButton');
+  if(!elem.hasClass('hidden')) elem.addClass('hidden');
+  var elem = $('#playButton');
+  if(!elem.hasClass('hidden')) elem.addClass('hidden');
+  if(!elem.hasClass('playNotAvailable')) elem.addClass('playNotAvailable');
+}
+
+function swapPlace(name){
+  socket.emit('swap_place', {name:name});
+  displayMsg('system','Swapping with '+name+'...');
+}
+
+socket.on('they_swap', function(msg){
+  var place = places[msg.p1];
+  places[msg.p1] = places[msg.p2];
+  places[msg.p2] = place;
+
+  thisPlaceIsNowOccupiedByThisPlayer(places[msg.p1], msg.p1);
+  thisPlaceIsNowOccupiedByThisPlayer(places[msg.p2], msg.p2);
+});
+
+socket.on('you_swap', function(msg){
+
+  // switch (places[msg.name]){
+  //   case 'topPlayer':
+  //     for(pName in places){
+  //       var pIndex = positions.indexOf(places[pName]);
+  //       if (pIndex==1 || pIndex==3){
+  //         places[pName] = positions[pIndex+2];
+  //       }
+  //     }
+  //   break;
+  //   case 'rightPlayer':
+  // }
+
+  console.log('my swap with msg.name');
+  debugger;
+  var shift = 4 - positions.indexOf(places[msg.name]);
+  // var place = places[msg.name];
+  places[msg.name] = 'bottomPlayer';
+
+  for(pName in places){
+    var pIndex = positions.indexOf(places[pName]);
+    places[pName] = positions[(pIndex+shift)%4];
+  }
+  for(pName in places){
+    thisPlaceIsNowOccupiedByThisPlayer(places[pName], pName);
+  }
+    
+
+
+
+  // var newPlaces = {};
+  // for (index in positions){
+  //   var pName = places[positions[index]];
+  //   var newPos = positions[(index + shift)%4];
+  //   newPlaces[pName] = newPos;
+  //   thisPlaceIsNowOccupiedByThisPlayer(newPos, pName);
+  // }
+  // places = newPlaces;
+});
+
+function thisPlaceIsNowOccupiedByThisPlayer(place, name){
+  $('#' + place + ' .playerName').text(name);
+  $('#' + place + ' button').attr('onclick','swapPlace('+"'"+name+"'"+');');
+}
+function emptyPlace(place){
+  $('#' + place + ' .playerName').text('');
+  $('#' + place + ' button').remove();
+}
+
+function launchGame(){
+  socket.emit('start_game',{});
+}
 // ==============================================================
 // ================== ACTION FROM THIS USER ===================
 // ==============================================================
@@ -169,7 +347,6 @@ socket.on('announced', function(msg){
 socket.on('played', function(msg){
   var targetCard = document.getElementById(places[msg.name]);
 
-  // console.log('played');
   var c = document.createElement('img');
     c.src='/images/cards/'+msg.card+'.png';
     c.className = "card";
@@ -195,6 +372,17 @@ socket.on('initialize_game', function(msg){
   dealer = msg.dealer;
   $('#' + places[msg.dealer]).append($('<span>').text('D').addClass('dealer'));
   $('<button>').text('Leave Game').attr('id','leaveGameButton').attr('onClick','leaveGame();').appendTo('#usersArea');
+
+  $('#newGameBoard').addClass('hidden');
+  $('#newGameButton').removeClass('hidden');
+
+  $('#leaveRoomButton').addClass('hidden');
+  if (!$('#playButton').hasClass('hidden')) $('#playButton').addClass('hidden');
+  if (!$('#inviteButton').hasClass('hidden')) $('#inviteButton').addClass('hidden');
+  for (pName in places){
+    $('#' + places[pName] + ' button').remove();
+  }
+
 });
 
 // <<<<<<<<<<<< GIVES THE USER HIS CARDS >>>>>>>>>>>>>>
@@ -244,7 +432,6 @@ function displayCardColor(letters){
 // <<<<<<<<<<<< INFORM USER OF THE TRUMPS >>>>>>>>>>>>>>
 socket.on('display_current_trick', function(msg){
   var cards = msg.cards;
-  console.log(msg);
   for (player in cards){
     var targetCard = document.getElementById(places[player]);
     var c = document.createElement('img');
@@ -308,6 +495,8 @@ function gameAbort(){
   }
   //hide announce board
   if (!$('#announceBoard').hasClass('hidden')) $('#announceBoard').addClass('hidden');
+  //display newGameBoard
+  $('#newGameBoard').removeClass('hidden');
 }
 
 function leaveGame(){
@@ -322,17 +511,25 @@ socket.on('user_status', function(msg){
 })
 
 function updateStatus(name, status){
-  console.log('status for ' + name + ' is '+ status);
   var elem = $('#userList li').filter(function(){ return $(this).text() === name});
+  updateStatusElem(elem, status);
+}
+
+function updateStatusElem(elem, status){
   if (!elem) return 0;
   switch (status){
     case 'available':
-      elem.append($('<input />', { type: 'checkbox', value: name}));
+      // elem.append($('<input />', { type: 'checkbox', value: name}));
+      elem.css('color','green');
     break;
     case 'hosting':
     case 'pending_invite':
+      elem.css('color','orange');
+
+    break;
     case 'in_game':
-      $('#userList li').filter(function(){ return $(this).text() === name}).html(name);
+      elem.css('color','red');
+      // $('#userList li').filter(function(){ return $(this).text() === name}).html(name);
     break;
     default:
       alert(status);
@@ -348,7 +545,6 @@ var elem = $('<li>').text(msg).addClass(type);
   $('#messages').append(elem);
   var elems = $('#messages li:not(:last-child)');
   elems.each(function(index, element){
-    console.log($(element).css('bottom'));
     var prevBot = $(element).css('bottom');
     prevBot = parseInt(prevBot.substr(0, prevBot.length - 2));
     $(element).css({bottom: prevBot + 35});

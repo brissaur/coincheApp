@@ -8,7 +8,7 @@ var users = require('./connectedUsers');
 
 
 // ==============================================================
-// ================== GLOBAL VARS ==================================
+// ================== GLOBAL VARS ===============================
 // ==============================================================
 var MAXPLAYER=2;
 var TIMEUNIT = 1000;
@@ -55,6 +55,9 @@ module.exports = function(io){
 				if (users[name].status == 'in_game' && users[name].game){
 					users[name].socket = null; 
 				} else {
+					if((users[name].status == 'hosting' || users[name].status == 'pending_invite')&& users[name].game){
+						Games.leaveRoom(name);
+					}
 					delete users[name];
 				}
 			}else{
@@ -69,6 +72,11 @@ module.exports = function(io){
 			if (msg.message.trim().length > 0 ) io.emit('chat_message', {name: name, message: msg.message});//TODO EVOL roadcast+print local
 	  	});
 		// <<<<<<<<<<<< Manage game invitation >>>>>>>>>>>>>>
+		socket.on('new_game', function(msg){
+			var name = socket.handshake.session.user.name;
+			Games.newRoom(name);
+	  	});
+
 		socket.on('game_invitation', function(msg){
 			//TODO: check user input
 			var name = socket.handshake.session.user.name;
@@ -79,11 +87,23 @@ module.exports = function(io){
 		    assert(users[name]);
 		    assert(users[name].game);
 
-			Games.accept(users[name].game.gameID, name);
+			Games.accept(name);
 	  	});
 		socket.on('game_invitation_refused', function(msg){
 			var name = socket.handshake.session.user.name;
-		    Games.refuse(users[name].game.gameID, name);
+		    Games.refuse(name);
+	  	});
+	  	socket.on('leave_room', function(msg){
+			var name = socket.handshake.session.user.name;
+		    Games.leaveRoom(name);
+	  	});
+	  	socket.on('swap_place', function(msg){
+			var name = socket.handshake.session.user.name;
+	  		Games.swapPlace(name, msg.name);
+	  	});
+	  	socket.on('start_game', function(msg){
+			var name = socket.handshake.session.user.name;
+	  		Games.startGame(name);
 	  	});
 
 		// <<<<<<<<<<<< Manage a player annonce >>>>>>>>>>>>>>

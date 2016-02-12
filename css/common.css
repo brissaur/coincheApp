@@ -3,15 +3,14 @@
 /*******************************/
 body{
       min-width: 768px ;
-      background-color: blue;
+      background-color: black;
       min-height: 300px;
 }
 button{
       color:black;
 }
-button:hover, button.selected{
-      background-color: blue;
-      color: white;
+li {
+      list-style-type: none;
 }
 
 /*******************************/
@@ -28,6 +27,10 @@ button:hover, button.selected{
 }
 #announceBoard{
 
+}
+.announceButton:hover, .announceButton.selected{
+      background-color: blue;
+      color: white;
 }
 /************SCORES**************/
 #scores{
@@ -67,6 +70,11 @@ td{
 }
 .player, .player img{
       position: absolute;
+}
+.playerName{
+      background-color: white;
+      text-align: center;
+      border-radius: 3px;
 }
 #topPlayer{
       left:45%;
@@ -130,7 +138,7 @@ td{
       width: 100px;
 }
 /************INVITE**************/
-#inviteBoard{
+.popup{
       position: absolute;
       top:33%;
       background-color: grey;
@@ -139,6 +147,13 @@ td{
       text-align: center;
       border-radius: 15px;
 }
+.playNotAvailable{
+      color:grey;
+}
+#inviteFriends{
+      z-index:100;
+}
+
 
 /************ANNOUNCE**************/
 #announceBoard{
@@ -178,7 +193,6 @@ td{
 
 }
 #messages {
-      list-style-type: none;
 }
 
 /*******************************/

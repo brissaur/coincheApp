@@ -14,6 +14,7 @@ var users = require('./connectedUsers');
 var _res = {}//resulted element from require;
 // var url = 'mongodb://localhost:27017/test';
 var invites = {};
+var rooms = {};
 var games = {};
 
 var CARD_COLLECTION = 'cards';
@@ -38,97 +39,175 @@ function invite(name, players){
 	if (!allUserReady) return -1;//TODO: notify user
 
 	/*** CREATE NEW INVITATION ***/
-	var inviteID = getNewAvailableGameId();
-	invites[inviteID] = {player:[]};
+	// var inviteID = getNewAvailableGameId();
+	// invites[inviteID] = {player:[]};
 
 	/*** ADD INVITER ***/
-	invites[inviteID].player[name] = true;
-	users[name].game = {gameID:inviteID};
-	updateStatus(name, 'hosting');
-	
+	// invites[inviteID].player[name] = true;
+	// users[name].game = {gameID:inviteID};
+	// updateStatus(name, 'hosting');
+	var inviteID = users[name].game.gameID;
 	/*** ADD INVITER ***/
 	players.forEach(function(pName){
 		assert(users[pName]);
-		invites[inviteID].player[pName] = false;
+		// invites[inviteID].player[pName] = false;
     	users[pName].game = {gameID:inviteID};
 		updateStatus(pName, 'pending_invite');
 		io.to(users[pName].socket).emit('game_invitation', {msg:'', name: name, gameID: inviteID});
+		/*** ADD TIMEOUT ***/
+		users[pName].timeoutFunction = setTimeout(function(){gameInvitationCancel(pName); }, 10*TIMEUNIT);
 	});
 	
-	/*** ADD TIMEOUT ***/
-	invites[inviteID].timeoutFunction = setTimeout(function(){invitationCancel(inviteID,null); }, 10*TIMEUNIT);
 }
 
-_res.accept = accept;
-function accept(inviteID, player){
-	/*** ASSERTS ***/
-	assert(inviteID);
-	assert(invites[inviteID]);
-	assert(invites[inviteID].player);
-	assert(invites[inviteID].player[player] !== 'undefined');
+	function gameInvitationCancel(name){
+		//notify host
+		io.to(users[rooms[users[name].game.gameID].host].socket).emit('game_invitation_cancelled', {message:'', name:name});
+		//notify name
+		io.to(users[name].socket).emit('invitation_timeout', {message:'', name:name});
 
-	/*** PLAYER ACCEPTS ***/
-	invites[inviteID].player[player] = true;
-	
-	if (readyToStart(inviteID)){
-	/*** START GAME ***/
-		/*** CLEAR TIMEOUT ***/
-		clearTimeout(invites[inviteID].timeoutFunction);
-		/*** CREATE GAME OBJECT ***/
-		var game = init(inviteID);
-		
-		/*** NOTIFY PLAYER STATUS ***/
-		for (pIndex in game.playersIndexes){
-			var pName = game.playersIndexes[pIndex];
-			updateStatus(pName, 'in_game');
-		}
-		/*** NOTIFY PLAYER GAME DATA ***/
-		for (pIndex in game.playersIndexes){
-			var pName = game.playersIndexes[pIndex];
-			io.to(users[pName].socket).emit('initialize_game', 
-				{msg:'', players: game.playersIndexes, dealer: game.playersIndexes[game.currentDealer]});
-		}
-		/*** GAME BEGINS ***/
-		game.nextJetee();
+		//delete info
+		delete users[name].timeoutFunction;
+		users[name].game = null;
+		updateStatus(name, 'available');
 	}
+
+_res.newRoom = newRoom;
+function newRoom(name){
+	/*** CREATE NEW INVITATION ***/
+	var roomID = getNewAvailableGameId();
+	rooms[roomID] = {player:[]};
+	// rooms[roomID].order = {};
+	rooms[roomID].host=name;
+	rooms[roomID].nbPlayers = 1;
+	rooms[roomID].places = {};
+	rooms[roomID].availablePlaces = [3,2,1];
+	/*** ADD HOST ***/
+	// rooms[roomID].player[name] = true;
+	// rooms[roomID].order[0]=name;
+	rooms[roomID].places[name] = 0;
+	users[name].game = {gameID:roomID};
+	updateStatus(name, 'hosting');
+	
+	// /*** ADD INVITER ***/
+	// players.forEach(function(pName){
+	// 	assert(users[pName]);
+	// 	invites[inviteID].player[pName] = false;
+ //    	users[pName].game = {gameID:inviteID};
+	// 	updateStatus(pName, 'pending_invite');
+	// 	io.to(users[pName].socket).emit('game_invitation', {msg:'', name: name, gameID: inviteID});
+	// });
+	
+	/*** ADD TIMEOUT ***/
+	// invites[inviteID].timeoutFunction = setTimeout(function(){invitationCancel(inviteID,null); }, 10*TIMEUNIT);
+}
+_res.leaveRoom = leaveRoom;
+function leaveRoom(name){
+	var targetRoom = rooms[users[name].game.gameID];
+	if (targetRoom.host == name){
+		for (pName in targetRoom.places){
+			if (pName != name) io.to(users[pName].socket).emit('room_cancel',{name:name});//4: to check
+		}
+		for (pName in targetRoom.places){
+			users[pName].game = null;
+			updateStatus(pName, 'available');
+		}
+		delete targetRoom;
+		return;
+	}
+	if (targetRoom.nbPlayers == 4) io.to(users[targetRoom.host].socket).emit('game_not_ready_to_start',{});
+	targetRoom.nbPlayers--;
+	for (pName in targetRoom.places){
+		io.to(users[pName].socket).emit('left_room',{name:name});//4: to check
+	}
+	targetRoom.availablePlaces.push(targetRoom.places[name]);
+	delete targetRoom.places[name];
+
+	users[name].game = null;
+	updateStatus(name, 'available');
+}
+
+
+
+_res.accept = accept;
+function accept(player){
+	clearTimeout(users[player].timeoutFunction);
+
+	var targetRoom = rooms[users[player].game.gameID];
+	if (targetRoom.nbPlayers == 4) {
+		//notify
+		return;
+	}
+	targetRoom.nbPlayers++;
+	var newPlayerIndex = targetRoom.availablePlaces.pop();
+	targetRoom.places[player] = newPlayerIndex;
+
+	for(pName in targetRoom.places){
+		var pIndex = targetRoom.places[pName];
+		if (pName != player){
+			io.to(users[pName].socket).emit('joined_room',
+				{name:player, place:(newPlayerIndex-pIndex+4)%4});//4: to check
+		
+			io.to(users[player].socket).emit('joined_room',
+				{name:pName, place:(pIndex-newPlayerIndex+4)%4});//4: to check
+		}
+	}
+
+	if (targetRoom.nbPlayers == 4) io.to(users[targetRoom.host].socket).emit('game_ready_to_start',{});
 }
 
 _res.refuse = refuse;
-function refuse(inviteID, player){
-	/*** ASSERT ***/
-	assert(invites[inviteID]);
-	assert(invites[inviteID].player[player]!=null);
-	/*** CLEAR TIMEOUT ***/
-	clearTimeout(invites[inviteID].timeoutFunction);
+function refuse(player){
+	clearTimeout(users[player].timeoutFunction);
 	/*** CANCEL GAME ***/
-	invitationCancel(inviteID, player);
+	gameInvitationCancel(player);
 }
 
-function invitationCancel(inviteID, player){
-	/*** NOTIFY PLAYERS ***/
-	io.emit('game_invitation_cancelled', {message:'', gameID: inviteID, name:player});
+_res.swapPlace = swapPlace;
+function swapPlace(p1, p2){
+	var thisRoom = rooms[users[p1].game.gameID];
+	var p1index = thisRoom.places[p1];
+	var p2index = thisRoom.places[p2];
+	thisRoom.places[p1] = p2index;
+	thisRoom.places[p2] = p1index;
+
 	
-	/*** NOTIFY PLAYERS STATUS***/
-	for(pName in invites[inviteID].player){
-    	if (users[pName]) { //Handle player disconection
-    		users[pName].game=null;
-			updateStatus(pName, 'available');
+	//notify
+	io.to(users[p1].socket).emit('you_swap',{name:p2});
+	io.to(users[p2].socket).emit('you_swap',{name:p1});
+
+	for (pName in thisRoom.places){
+		if (pName != p1 && pName != p2){
+			io.to(users[pName].socket).emit('they_swap',{p1:p1, p2:p2});
 		}
-    }
-	/*** DELETE INVITATION***/
-	delete invites[inviteID];
-	
+	}
+	console.log(thisRoom.places);
 }
 
-_res.readyToStart = readyToStart;
-function readyToStart(inviteID){
-	assert(invites[inviteID]);
-	
-	var gameMustStart = true;
-	for (index in invites[inviteID].player){
-		gameMustStart = gameMustStart && invites[inviteID].player[index];
+_res.startGame = startGame;
+function startGame(name){
+	var gameID = users[name].game.gameID;
+	assert(rooms[gameID].host == name);
+	assert(rooms[gameID].nbPlayers == 4);
+	var players = [];
+	for (player in rooms[gameID].places){
+		players[rooms[gameID].places[player]] = player;
 	}
-	return gameMustStart;
+	console.log(players);
+	games[gameID] = new Game(gameID, players);
+	thisGame = games[gameID];
+
+	// thisGame.
+	thisGame.distribute();
+	thisGame.playersIndexes.forEach(function(pName){
+		io.to(users[pName].socket).emit('initialize_game', 
+			{msg:'', players: thisGame.playersIndexes, dealer: thisGame.playersIndexes[thisGame.currentDealer]});
+		io.to(users[pName].socket).emit('distribution', 
+			{msg:'', cards: thisGame.players[pName].cards, dealer: thisGame.playersIndexes[thisGame.currentDealer]});
+		updateStatus(pName, 'in_game');
+	});
+	io.to(users[thisGame.playersIndexes[thisGame.currentPlayer]].socket).emit('announce', { winningAnnounce:{value:0,color:'',playerName:''}, msg:''});
+
 }
 
 // ==============================================================
