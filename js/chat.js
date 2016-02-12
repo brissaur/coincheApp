@@ -43,12 +43,6 @@ $(document).keypress(function(e) {
         elem.addClass('hidden');
       }
     }
-    // console.log(document.hasFocus());
-  // if ($('#messageInput').is(":focus")){
-  //   console.log($('#messageInput').val());
-  // }
-  // console.log($('#messageInput').is(":selected"));
-    // console.log(elem.hasFocus());
 });
 
 $('form').submit(function(){
@@ -60,8 +54,21 @@ $('form').submit(function(){
 
 // <<<<<<<<<<<< Receive chat message >>>>>>>>>>>>>>
 socket.on('chat_message', function(msg){
-  displayMsg('chat', msg.name + ': ' +msg.message);
+  var message = '';
+  var i = 0;
+  // while (){}
+  if (msg.message.length > 50){
+    message = msg.message.slice(0,50) + '<br />' + msg.message.slice(50, msg.message.length);
+  } else {
+    message = msg.message;
+  }
+  displayMsg('chat', msg.name + ': ' +message);
+
 });
+
+function strSplice(start, length){
+  
+}
 // ==============================================================
 // ================== CONNECTION ===============================
 // ==============================================================
@@ -118,13 +125,6 @@ function newGame(){
   $('#inviteButton').removeClass('hidden');
   $('#playButton').removeClass('hidden');
   $('#leaveRoomButton').removeClass('hidden');
-  // $('<button>').text('invite coupaings').addClass('col-xs-6').addClass('col-xs-offset-3').attr('onClick', 'invitePlayers()')
-    // .appendTo($('#board'));
-  //invite player
-  //add swap with players when one player join
-
-
-  //game init: who is dealer + where are players + ...?
 };
 
 socket.on('joined_room', function(msg){
@@ -157,9 +157,6 @@ socket.on('present_players', function(msg){
     places[playername]=positions[(i-myIndex+4)%4];
     $('#'+ places[playername] + ' .playerName').text(playername)
   };
-  // dealer = msg.dealer;
-  // $('#' + places[msg.dealer]).append($('<span>').text('D').addClass('dealer'));
-  // $('<button>').text('Leave Game').attr('id','leaveGameButton').attr('onClick','leaveGame();').appendTo('#usersArea');
 });
 
 socket.on('game_invitation', function(msg){// name, 
@@ -187,8 +184,10 @@ socket.on('game_not_ready_to_start',function(msg){
 
 function invitePlayers(){
   var players = [];
-  $('#inviteList :checkbox:checked').each(function(index, element){//TODO pb si aucun enfant;
-    players.push($(this).val());
+  // $('#inviteList :checkbox:checked').each(function(index, element){//TODO pb si aucun enfant;
+  $('.invited').each(function(index, element){//TODO pb si aucun enfant;
+    players.push($(this).text());
+    console.log($(this).text());
   });
   if(players.length>0) {
     socket.emit('game_invitation', {players: players});
@@ -223,13 +222,28 @@ function inviteFriends(){
   $.get('/connectedUsers',function(data){
     data.forEach(function(user){
       if(user.status == 'available'){
-        var elem = $('<li>').text(user.name).append($('<input />', { type: 'checkbox', value: user.name}));
+        var elem = $('<li>').text(user.name).addClass('invitable')
+        .on('click', function(){
+          if (!$(this).hasClass('invited')){
+            $(this).css('backgroundColor', 'darkblue');
+            // $(this).css('color', 'blue');
+            $(this).addClass('invited');
+          } else {
+            $(this).css('backgroundColor', 'blue');
+            $(this).removeClass('invited');
+          }
+        }); //append($('<input />', { type: 'checkbox', value: user.name}));
+        // var elem = $('<li>').text(user.name).append($('<input />', { type: 'checkbox', value: user.name}));
         $('#inviteList').append(elem);
       }
     });
     if ($('#inviteList li').length == 0) $('<li>').text('No friends can be invited').appendTo($('#inviteList'));
   });
 }
+
+$('.invitable').on('click', function(){
+  alert('!!!');
+})
 
 function leaveRoom(){
   $('#leaveRoomButton').addClass('hidden');
@@ -261,20 +275,6 @@ socket.on('they_swap', function(msg){
 
 socket.on('you_swap', function(msg){
 
-  // switch (places[msg.name]){
-  //   case 'topPlayer':
-  //     for(pName in places){
-  //       var pIndex = positions.indexOf(places[pName]);
-  //       if (pIndex==1 || pIndex==3){
-  //         places[pName] = positions[pIndex+2];
-  //       }
-  //     }
-  //   break;
-  //   case 'rightPlayer':
-  // }
-
-  console.log('my swap with msg.name');
-  debugger;
   var shift = 4 - positions.indexOf(places[msg.name]);
   // var place = places[msg.name];
   places[msg.name] = 'bottomPlayer';
@@ -286,18 +286,6 @@ socket.on('you_swap', function(msg){
   for(pName in places){
     thisPlaceIsNowOccupiedByThisPlayer(places[pName], pName);
   }
-    
-
-
-
-  // var newPlaces = {};
-  // for (index in positions){
-  //   var pName = places[positions[index]];
-  //   var newPos = positions[(index + shift)%4];
-  //   newPlaces[pName] = newPos;
-  //   thisPlaceIsNowOccupiedByThisPlayer(newPos, pName);
-  // }
-  // places = newPlaces;
 });
 
 function thisPlaceIsNowOccupiedByThisPlayer(place, name){

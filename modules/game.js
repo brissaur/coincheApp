@@ -31,21 +31,6 @@ module.exports = function(launcherIo){
 // ==============================================================
 _res.invite = invite;
 function invite(name, players){
-	/*** CHECK INVITES USER ARE AVAILABLE***/
-	// var allUserReady = true;
-	// players.forEach(function(pName){
-	// 	allUserReady = allUserReady && users[pName].status == 'available';
-	// });
-	// if (!allUserReady) return -1;//TODO: notify user
-
-	/*** CREATE NEW INVITATION ***/
-	// var inviteID = getNewAvailableGameId();
-	// invites[inviteID] = {player:[]};
-
-	/*** ADD INVITER ***/
-	// invites[inviteID].player[name] = true;
-	// users[name].game = {gameID:inviteID};
-	// updateStatus(name, 'hosting');
 	var inviteID = users[name].game.gameID;
 	/*** ADD INVITER ***/
 	players.forEach(function(pName){
@@ -84,24 +69,11 @@ function newRoom(name){
 	rooms[roomID].nbPlayers = 1;
 	rooms[roomID].places = {};
 	rooms[roomID].availablePlaces = [3,2,1];
-	/*** ADD HOST ***/
-	// rooms[roomID].player[name] = true;
-	// rooms[roomID].order[0]=name;
+
 	rooms[roomID].places[name] = 0;
 	users[name].game = {gameID:roomID};
 	updateStatus(name, 'hosting');
 	
-	// /*** ADD INVITER ***/
-	// players.forEach(function(pName){
-	// 	assert(users[pName]);
-	// 	invites[inviteID].player[pName] = false;
- //    	users[pName].game = {gameID:inviteID};
-	// 	updateStatus(pName, 'pending_invite');
-	// 	io.to(users[pName].socket).emit('game_invitation', {msg:'', name: name, gameID: inviteID});
-	// });
-	
-	/*** ADD TIMEOUT ***/
-	// invites[inviteID].timeoutFunction = setTimeout(function(){invitationCancel(inviteID,null); }, 10*TIMEUNIT);
 }
 _res.leaveRoom = leaveRoom;
 function leaveRoom(name){

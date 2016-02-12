@@ -153,7 +153,16 @@ td{
 #inviteFriends{
       z-index:100;
 }
-
+#newGameButton{
+      /*display: block;*/
+}
+.invitable{
+      background-color: blue;
+      margin-left:30%;
+      margin-right:30%;
+      border-radius: 15px;
+      cursor: pointer;
+}
 
 /************ANNOUNCE**************/
 #announceBoard{
