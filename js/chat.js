@@ -38,9 +38,17 @@ $(document).keypress(function(e) {
         elem.removeClass('hidden');
         $('#messageInput').focus();
       } else {
+        
+        if (!$('#messageInput').is((":focus"))) e.preventDefault();
         elem.addClass('hidden');
       }
     }
+    // console.log(document.hasFocus());
+  // if ($('#messageInput').is(":focus")){
+  //   console.log($('#messageInput').val());
+  // }
+  // console.log($('#messageInput').is(":selected"));
+    // console.log(elem.hasFocus());
 });
 
 $('form').submit(function(){
@@ -49,6 +57,7 @@ $('form').submit(function(){
   $('#messageInput').val('');
   return false;
 });
+
 // <<<<<<<<<<<< Receive chat message >>>>>>>>>>>>>>
 socket.on('chat_message', function(msg){
   displayMsg('chat', msg.name + ': ' +msg.message);
@@ -301,7 +310,9 @@ function emptyPlace(place){
 }
 
 function launchGame(){
-  socket.emit('start_game',{});
+  if (!$('#playButton').hasClass('playNotAvailable')){
+    socket.emit('start_game',{});
+  }
 }
 // ==============================================================
 // ================== ACTION FROM THIS USER ===================

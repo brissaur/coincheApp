@@ -32,11 +32,11 @@ module.exports = function(launcherIo){
 _res.invite = invite;
 function invite(name, players){
 	/*** CHECK INVITES USER ARE AVAILABLE***/
-	var allUserReady = true;
-	players.forEach(function(pName){
-		allUserReady = allUserReady && users[pName].status == 'available';
-	});
-	if (!allUserReady) return -1;//TODO: notify user
+	// var allUserReady = true;
+	// players.forEach(function(pName){
+	// 	allUserReady = allUserReady && users[pName].status == 'available';
+	// });
+	// if (!allUserReady) return -1;//TODO: notify user
 
 	/*** CREATE NEW INVITATION ***/
 	// var inviteID = getNewAvailableGameId();
@@ -50,12 +50,14 @@ function invite(name, players){
 	/*** ADD INVITER ***/
 	players.forEach(function(pName){
 		assert(users[pName]);
-		// invites[inviteID].player[pName] = false;
-    	users[pName].game = {gameID:inviteID};
-		updateStatus(pName, 'pending_invite');
-		io.to(users[pName].socket).emit('game_invitation', {msg:'', name: name, gameID: inviteID});
-		/*** ADD TIMEOUT ***/
-		users[pName].timeoutFunction = setTimeout(function(){gameInvitationCancel(pName); }, 10*TIMEUNIT);
+		if(users[pName].status == 'available'){
+			// invites[inviteID].player[pName] = false;
+	    	users[pName].game = {gameID:inviteID};
+			updateStatus(pName, 'pending_invite');
+			io.to(users[pName].socket).emit('game_invitation', {msg:'', name: name, gameID: inviteID});
+			/*** ADD TIMEOUT ***/
+			users[pName].timeoutFunction = setTimeout(function(){gameInvitationCancel(pName); }, 10*TIMEUNIT);
+		}
 	});
 	
 }
