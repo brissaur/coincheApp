@@ -13,6 +13,10 @@ var pseudo = '';
 var zindex=10;
 var shiftLeft=0;
 
+var TIMEUNIT = 1000;
+var WAITINGTIME = 2 * TIMEUNIT;
+var preventEvent = false;
+
 // ==============================================================
 // ================== INITIAL SCRIPTS ===============================
 // ==============================================================
@@ -307,7 +311,14 @@ function launchGame(){
 // ==============================================================
 /*** USER HAS TO PLAY***/
 socket.on('play', function(msg){
+  if (preventEvent){
+    setTimeout(function() {
       timeToPlay(msg.cards);
+    }, WAITINGTIME);
+  } else {
+    preventEvent = false;
+    timeToPlay(msg.cards);
+  }
 });
 
 /*** USER HAS TO ANNOUNCE***/
@@ -353,8 +364,10 @@ socket.on('played', function(msg){
 });
 /*** ANOTHER USER COINCHED ***/
 socket.on('coinche', function(msg){
-  $('#'+ places[msg.name] + ' .announce').text('Coinched!');
-  if(!$('#announceBoard').hasClass('hidden')) $('#announceBoard').addClass('hidden');
+  setTimeout(function() {
+    $('#'+ places[msg.name] + ' .announce').text('Coinched!');
+    if(!$('#announceBoard').hasClass('hidden')) $('#announceBoard').addClass('hidden');
+  }, WAITINGTIME);
 });
 
 // ==============================================================
@@ -386,10 +399,12 @@ socket.on('initialize_game', function(msg){
 
 // <<<<<<<<<<<< GIVES THE USER HIS CARDS >>>>>>>>>>>>>>
 socket.on('distribution', function(msg){
-  distribute(msg.cards);
-  $('#' + places[dealer] + ' .dealer').remove();
-  dealer = msg.dealer;
-  $('#' + places[msg.dealer]).append($('<span>').text('D').addClass('dealer'));
+  setTimeout(function() {
+    distribute(msg.cards);
+    $('#' + places[dealer] + ' .dealer').remove();
+    dealer = msg.dealer;
+    $('#' + places[msg.dealer]).append($('<span>').text('D').addClass('dealer'));
+  }, (preventEvent?WAITINGTIME:0));
 });
 
 // <<<<<<<<<<<< INFORM USER OF THE TRUMPS >>>>>>>>>>>>>>
@@ -443,9 +458,13 @@ socket.on('display_current_trick', function(msg){
 // <<<<<<<<<<<< Manage end of a trick >>>>>>>>>>>>>>
 socket.on('end_trick', function(msg){
   displayMsg('system',msg.message);
-  for(divs in places){
-    $('#' + places[divs] + ' img').remove();
-  }
+  preventEvent = true;
+  setTimeout(function() {
+    for(divs in places){
+      $('#' + places[divs] + ' img').remove();
+    }
+    preventEvent = false;
+  }, WAITINGTIME);
 });
 // <<<<<<<<<<<< Manage end of jetee >>>>>>>>>>>>>>
 socket.on('end_jetee', function(msg){
