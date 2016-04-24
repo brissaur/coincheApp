@@ -6,6 +6,7 @@ var express = require('express');
 	var app = express();
 		app.use(express.static(__dirname));//define static default path (for js & css files)
 var http = require('http').Server(app);
+var http = require('http').createServer(app);
 /*** LANGUAGE FOR HTML TEMPLATES ***/
 var jade = require('jade');
   app.set('view engine', 'jade');
@@ -46,7 +47,7 @@ var user = require(__dirname +'/modules/user');
 // ================== GLOBAL VARS ===============================
 // ==============================================================
 var PORT = 3000;
-
+var logDate = new Date();
 // ==============================================================
 // ================== ROUTES ====================================
 // ==============================================================
@@ -81,7 +82,6 @@ app.get('/register', function (req, res){
   res.render('register');
 });
 app.post('/register', function (req, res){
-  	console.log('Attempt register...');
   	user.create(req, res, function (err, msg, result){
 	    if (err){
 	      req.session.redirectmessage='ERROR: '+ err.message;
@@ -95,6 +95,7 @@ app.post('/register', function (req, res){
 	});
 });
 app.get('/logout', function (req, res){
+  console.log(logDate + ' INFO ' + 'DISCONNECT ' + 'user ' + req.session.user.name +' disconnected manually');
   req.session.user = null;
   req.session.redirectmessage = 'You were successfully disconnected';
   res.redirect('/login');

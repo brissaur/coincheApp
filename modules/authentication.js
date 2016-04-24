@@ -12,6 +12,8 @@ function login(req, res, next){
 	user.authenticate(username, password, function(err, msg, resultedUser){
 		if (err) return next(err);
 	    if (resultedUser) {
+  			var logDate = new Date();
+  			console.log(logDate + ' INFO ' + 'LOGIN ' + resultedUser.name +' connected');
 			req.session.user = {id: resultedUser.id, email: resultedUser.email, name: resultedUser.name};
 			req.session.redirectmessage = 'You were successfuly logged in.';
 			res.redirect('/home');
