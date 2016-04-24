@@ -117,6 +117,6 @@ app.get('/connectedUsers',auth.checkAuthorized, function (req, res){
 // ==============================================================
 // ================== LISTEN ====================================
 // ==============================================================
-http.listen(PORT, function(){
+http.listen(PORT, '0.0.0.0', function(){
   console.log('listening on *:'+PORT);
 });
