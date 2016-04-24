@@ -95,7 +95,7 @@ app.post('/register', function (req, res){
 });
 app.get('/logout', function (req, res){
   console.log(new Date() + ' INFO ' + 'DISCONNECT ' + 'user ' + req.session.user.name +' disconnected manually');
-  req.session.user = null;
+  if (req.session) {req.session.user = null;}
   req.session.redirectmessage = 'You were successfully disconnected';
   res.redirect('/login');
 });

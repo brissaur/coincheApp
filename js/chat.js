@@ -278,11 +278,13 @@ socket.on('they_swap', function(msg){
 });
 
 socket.on('you_swap', function(msg){
-
   var shift = 4 - positions.indexOf(places[msg.name]);
   // var place = places[msg.name];
-  places[msg.name] = 'bottomPlayer';
+  for(pName in places){
+    emptyPlace(places[pName]);
+  }
 
+  places[msg.name] = 'bottomPlayer';
   for(pName in places){
     var pIndex = positions.indexOf(places[pName]);
     places[pName] = positions[(pIndex+shift)%4];
@@ -294,7 +296,9 @@ socket.on('you_swap', function(msg){
 
 function thisPlaceIsNowOccupiedByThisPlayer(place, name){
   $('#' + place + ' .playerName').text(name);
-  $('#' + place + ' button').attr('onclick','swapPlace('+"'"+name+"'"+');');
+  // $('#' + place + ' button').attr('onclick','swapPlace('+"'"+name+"'"+');');
+  $('#' + place + ' button').remove();
+  $('<button>').attr('onClick', 'swapPlace('+"'"+name+"'"+');').text('swap place').appendTo($('#'+ place));
 }
 function emptyPlace(place){
   $('#' + place + ' .playerName').text('');
