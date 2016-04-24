@@ -14,7 +14,6 @@ var MAXPLAYER=2;
 var TIMEUNIT = 1000;
 var rooms = {};
 var launcher = {};
-var logDate = new Date();
 // var url = 'mongodb://localhost:27017/test';
 
 
@@ -39,7 +38,7 @@ module.exports = function(io){
 			} else {
 				users[name] = {socket: socket.id, name: name, game:null, status: 'available'};
 			}
-				console.log(logDate + ' INFO ' + 'CONNECTION ' + 'user ' + name + ' is connected');
+				console.log(new Date() + ' INFO ' + 'CONNECTION ' + 'user ' + name + ' is connected');
 				socket.emit('connection_accepted', {message:'Connection accepted', name: name});//when connection refused? how?
 				socket.broadcast.emit('connection', {user:{name: name, status: users[name].status}});
 				if (users[name].game) Games.game(users[name].game.gameID).reconnect(name);
@@ -65,7 +64,7 @@ module.exports = function(io){
 			}else{
 				var name='visitor';
 			}
-			console.log(logDate + ' INFO ' + 'DISCONNECTION ' + 'user ' + name + ' is disconnected');
+			console.log(new Date() + ' INFO ' + 'DISCONNECTION ' + 'user ' + name + ' is disconnected');
 			socket.broadcast.emit('disconnection', {name:name});
 		});
 		// <<<<<<<<<<<< Manage chat message >>>>>>>>>>>>>>

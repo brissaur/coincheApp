@@ -41,8 +41,7 @@ function create(req, res, callback){//securité transfert mdp
   			}
 			db.collection(USER_COLLECTION).insert(user,function(err, res){
 				if (err) return callback(err);
-				var logDate = new Date();
-				console.log(logDate + ' INFO ' + 'REGISTER '+ user.name + ' with email ' + user.email);
+				console.log(new Date() + ' INFO ' + 'REGISTER '+ user.name + ' with email ' + user.email);
 		    	callback(null, null, res.ops[0]._id);//todo pourquoi
 			});
 		});

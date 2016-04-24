@@ -47,7 +47,6 @@ var user = require(__dirname +'/modules/user');
 // ================== GLOBAL VARS ===============================
 // ==============================================================
 var PORT = 3000;
-var logDate = new Date();
 // ==============================================================
 // ================== ROUTES ====================================
 // ==============================================================
@@ -95,7 +94,7 @@ app.post('/register', function (req, res){
 	});
 });
 app.get('/logout', function (req, res){
-  console.log(logDate + ' INFO ' + 'DISCONNECT ' + 'user ' + req.session.user.name +' disconnected manually');
+  console.log(new Date() + ' INFO ' + 'DISCONNECT ' + 'user ' + req.session.user.name +' disconnected manually');
   req.session.user = null;
   req.session.redirectmessage = 'You were successfully disconnected';
   res.redirect('/login');
