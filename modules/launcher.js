@@ -53,13 +53,15 @@ module.exports = function(io){
 		socket.on('disconnect', function(){
 			if (socket.handshake.session.user){
 				var name=socket.handshake.session.user.name;
-				if (users[name].status == 'in_game' && users[name].game){
-					users[name].socket = null; 
-				} else {
-					if((users[name].status == 'hosting' || users[name].status == 'pending_invite')&& users[name].game){
-						Games.leaveRoom(name);
+				if (users[name]){
+					if (users[name].status == 'in_game' && users[name].game){
+						users[name].socket = null; 
+					} else {
+						if((users[name].status == 'hosting' || users[name].status == 'pending_invite')&& users[name].game){
+							Games.leaveRoom(name);
+						}
+						delete users[name];
 					}
-					delete users[name];
 				}
 			}else{
 				var name='visitor';

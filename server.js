@@ -70,6 +70,7 @@ app.get('/test', function(req, res){
 /*** USER LOGIN ROUTE ***/
 app.get('/login', function (req, res) {
   res.render('login');
+  
 });
 app.post('/login', function (req, res){
   auth.login(req, res, function onError(err){
